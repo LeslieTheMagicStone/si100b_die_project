@@ -3,6 +3,7 @@
 import pygame
 import sys
 
+
 from SceneManager import SceneManager
 from Settings import *
 from Player import Player
@@ -15,7 +16,7 @@ def run_game():
 
     scene = SceneManager(window)
 
-    # 创建角色，sprites暂时写在这里
+    # 创建角色（sprites暂时写在这里）
     sprites = pygame.sprite.Group()
     player = Player(WindowSettings.width // 2, WindowSettings.height // 2)
     sprites.add(player)
