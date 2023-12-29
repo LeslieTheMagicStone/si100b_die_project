@@ -4,7 +4,7 @@
 from enum import Enum
 
 class WindowSettings:
-    name = "Thgink Luos"
+    name = "小李做的都队"
     width = 1280
     height = 720
     outdoorScale = 1.5 # A necessary scale to allow camera movement in outdoor scenes
