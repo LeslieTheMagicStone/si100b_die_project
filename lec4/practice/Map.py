@@ -6,8 +6,7 @@ from random import random,randint
 class Block(pygame.sprite.Sprite):
     def __init__(self, image, x, y):
         super().__init__()
-        self.image = pygame.transform.scale(image, 
-            (SceneSettings.tileWidth, SceneSettings.tileHeight))
+        self.image = pygame.transform.scale(image, (SceneSettings.tileWidth, SceneSettings.tileHeight))
         self.rect = self.image.get_rect()
         self.rect.topleft = (x, y)
 
@@ -26,21 +25,17 @@ def gen_map():
     return mapObj
 
 def build_obstacles():
+    image = pygame.image.load(GamePath.tree) 
 
-    image = pygame.image.load(GamePath.tree)
     obstacles = pygame.sprite.Group()
-
-    midX = SceneSettings.tileXnum // 2
-    midY = SceneSettings.tileYnum // 2
-
+    # donot generate in the original position of player
+    # 左上没生成障碍，因为没做npc和障碍的碰撞
+    midx = SceneSettings.tileXnum//2
+    midy = SceneSettings.tileYnum//2
     for i in range(SceneSettings.tileXnum):
         for j in range(SceneSettings.tileYnum):
-            if random() < SceneSettings.obstacleDensity and \
-                ((i not in range(midX - 3, midX + 4))\
-                or (j not in range(midY - 3, midY + 4)))\
-                and (i > midX or j > midY):
-                obstacles.add(Block(image, 
-                    SceneSettings.tileWidth * i, SceneSettings.tileHeight * j))
-                
-    return obstacles
+            # 防止在出生点生成obstacle
+            if random() < SceneSettings.obstacleDensity and not(i < midx and j < midy) and (i not in range(midx-3, midx+3)) and (j not in range(midy-3, midy+3)):
+                obstacles.add(Block(image, SceneSettings.tileWidth * i, SceneSettings.tileHeight * j))
+    return obstacles       
 

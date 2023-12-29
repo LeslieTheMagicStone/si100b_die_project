@@ -17,6 +17,14 @@ class Player(pygame.sprite.Sprite):
         self.speed = PlayerSettings.playerSpeed
         self.talking = False
 
+        self.HP = PlayerSettings.playerHP
+        self.Attack = PlayerSettings.playerAttack
+        self.Defence = PlayerSettings.playerDefence
+        self.Money = PlayerSettings.playerMoney
+
+    def move(self, dx, dy):
+        self.rect = self.rect.move(dx,dy)
+
     def update(self, keys, scene):
         if self.talking:
             # 如果不移动，显示静态图像
@@ -37,12 +45,14 @@ class Player(pygame.sprite.Sprite):
                 
             self.rect = self.rect.move(dx, dy)
             if pygame.sprite.spritecollide(self, scene.obstacles, False):
+                # 遇到障碍物，取消移动
                 self.rect = self.rect.move(-dx, -dy)
-        
+
+            # 更新角色动画
             if any(keys):
                 self.index = (self.index + 1) % len(self.images)
                 self.image = self.images[self.index]
 
 
-    def render(self, window):
+    def draw(self, window):
         window.blit(self.image, self.rect)
