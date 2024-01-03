@@ -1,4 +1,3 @@
 # Project Introduction
 
-This is the repository of GCF, GuiChuFight(鬼畜大乱斗).
-This is an action-based game.
+This is the repository of 完蛋，被985包围了！made by 小李做的都队
