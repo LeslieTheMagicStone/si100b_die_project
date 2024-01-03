@@ -5,8 +5,16 @@ import pygame
 from Settings import *
 from random import random, randint
 
+
 class Block(pygame.sprite.Sprite):
-    def __init__(self, image, x=0, y=0, width=SceneSettings.tileWidth, height=SceneSettings.tileHeight):
+    def __init__(
+        self,
+        image,
+        x=0,
+        y=0,
+        width=SceneSettings.tileWidth,
+        height=SceneSettings.tileHeight,
+    ):
         super().__init__()
         ##### Your Code Here ↓ #####
         pass
@@ -17,30 +25,36 @@ class Block(pygame.sprite.Sprite):
         pass
         ##### Your Code Here ↑ #####
 
+
 def gen_wild_map():
     ##### Your Code Here ↓ #####
     pass
     ##### Your Code Here ↑ #####
+
 
 def gen_city_map():
     ##### Your Code Here ↓ #####
     pass
     ##### Your Code Here ↑ #####
 
+
 def gen_boss_map():
     ##### Your Code Here ↓ #####
     pass
     ##### Your Code Here ↑ #####
+
 
 def gen_city_obstacle():
     ##### Your Code Here ↓ #####
     pass
     ##### Your Code Here ↑ #####
 
+
 def gen_wild_obstacle():
     ##### Your Code Here ↓ #####
     pass
     ##### Your Code Here ↑ #####
+
 
 def gen_boss_obstacle():
     ##### Your Code Here ↓ #####

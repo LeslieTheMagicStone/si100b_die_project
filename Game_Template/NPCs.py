@@ -5,6 +5,7 @@ import pygame
 from Settings import *
 from Attributes import *
 
+
 class NPC(pygame.sprite.Sprite, Collidable):
     def __init__(self, x, y, name):
         # Initialize father classes
@@ -34,11 +35,12 @@ class DialogNPC(NPC):
         ##### Your Code Here ↓ #####
         pass
         ##### Your Code Here ↑ #####
-    
+
     def update(self, ticks):
         ##### Your Code Here ↓ #####
         pass
         ##### Your Code Here ↑ #####
+
 
 class ShopNPC(NPC):
     def __init__(self, x, y, name, items, dialog):
@@ -47,17 +49,17 @@ class ShopNPC(NPC):
         ##### Your Code Here ↓ #####
         pass
         ##### Your Code Here ↑ #####
-    
+
     def update(self, ticks):
         ##### Your Code Here ↓ #####
         pass
         ##### Your Code Here ↑ #####
-    
+
 
 class Monster(pygame.sprite.Sprite):
-    def __init__(self, x, y, HP = 10, Attack = 3, Defence = 1, Money = 15):
+    def __init__(self, x, y, HP=10, Attack=3, Defence=1, Money=15):
         super().__init__()
-        
+
         ##### Your Code Here ↓ #####
         pass
         ##### Your Code Here ↑ #####
@@ -67,10 +69,11 @@ class Monster(pygame.sprite.Sprite):
         pass
         ##### Your Code Here ↑ #####
 
+
 class Boss(pygame.sprite.Sprite):
     def __init__(self, x, y):
         super().__init__()
-        
+
         ##### Your Code Here ↓ #####
         pass
         ##### Your Code Here ↑ #####

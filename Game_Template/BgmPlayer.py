@@ -1,12 +1,12 @@
 import pygame
 from Settings import *
 
-class BgmPlayer():
+
+class BgmPlayer:
     def __init__(self):
         ##### Your Code Here ↓ #####
         pass
         ##### Your Code Here ↑ #####
-
 
     def play(self, name, loop=-1):
         ##### Your Code Here ↓ #####
@@ -22,6 +22,3 @@ class BgmPlayer():
         ##### Your Code Here ↓ #####
         pass
         ##### Your Code Here ↑ #####
-
-
-    

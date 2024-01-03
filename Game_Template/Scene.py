@@ -11,13 +11,12 @@ from PopUpBox import *
 from Portal import *
 from BgmPlayer import *
 
-class Scene():
+
+class Scene:
     def __init__(self, window):
         ##### Your Code Here ↓ #####
         pass
         ##### Your Code Here ↑ #####
-
-        
 
     def trigger_dialog(self, npc):
         ##### Your Code Here ↓ #####
@@ -60,7 +59,7 @@ class Scene():
         ##### Your Code Here ↑ #####
 
 
-class StartMenu():
+class StartMenu:
     def __init__(self, window):
         ##### Your Code Here ↓ #####
         pass
@@ -70,6 +69,7 @@ class StartMenu():
         ##### Your Code Here ↓ #####
         pass
         ##### Your Code Here ↑ #####
+
 
 class CityScene(Scene):
     def __init__(self, window):
@@ -83,6 +83,7 @@ class CityScene(Scene):
         pass
         ##### Your Code Here ↑ #####
 
+
 class WildScene(Scene):
     def __init__(self, window):
         super().__init__(window=window)
@@ -95,10 +96,11 @@ class WildScene(Scene):
         pass
         ##### Your Code Here ↑ #####
 
-    def gen_monsters(self, num = 10):
+    def gen_monsters(self, num=10):
         ##### Your Code Here ↓ #####
         pass
         ##### Your Code Here ↑ #####
+
 
 class BossScene(Scene):
     def __init__(self, window):
