@@ -4,7 +4,7 @@ import sys
 import pygame
 
 from Player import Player
-from Scene import *
+from Scenes import *
 from Settings import *
 from PopUpBox import *
 
@@ -26,9 +26,9 @@ class GameManager:
         self.flush_scene(SceneIndex.MAIN_MENU)
 
     def game_reset(self):
-        ##### Your Code Here ↓ #####
-        pass
-        ##### Your Code Here ↑ #####
+        # TODO reset the scenes
+
+        self.flush_scene(SceneIndex.MAIN_MENU)
 
     """ Necessary game components """
 
@@ -47,6 +47,10 @@ class GameManager:
             self.main_menu_scene = MainMenuScene(self.window)
             self.main_menu_scene.start()
             self.game_state = GameState.GAME_MAIN_MENU
+        elif GOTO == SceneIndex.CITY:
+            self.city_scene = CityScene(self.window)
+            self.city_scene.start()
+            self.game_state = GameState.GAME_PLAY_CITY
         else:
             raise NotImplementedError(
                 f"The update function of game state: {self.game_state.name} is not implemented yet."
@@ -64,10 +68,14 @@ class GameManager:
             if event.type == pygame.QUIT:
                 pygame.quit()
                 # No need to sys.exit(), right?
+            elif event.type == GameEvent.EVENT_RESTART:
+                self.game_reset()
 
         # Call update function of current game state
         if self.game_state == GameState.GAME_MAIN_MENU:
             self.main_menu_scene.update()
+        if self.game_state == GameState.GAME_PLAY_CITY:
+            self.city_scene.update()
 
     # Collision-relate update funtions here ↓
     def update_collide(self):
@@ -107,6 +115,8 @@ class GameManager:
     def render(self):
         if self.game_state == GameState.GAME_MAIN_MENU:
             self.main_menu_scene.render()
+        elif self.game_state == GameState.GAME_PLAY_CITY:
+            self.city_scene.render()
         else:
             raise NotImplementedError(
                 f"The render function of game state: {self.game_state.name} is not implemented yet."

@@ -73,20 +73,24 @@ class MainMenuScene(Scene):
 
     def start(self):
         self.player_image = pygame.image.load(GamePath.player[0])
-        self.player_rect = self.player_image.get_rect()
+        self.icon_rect = self.player_image.get_rect()
 
     def update(self):
         # A warm-up mini game,
-        # where you have to click the character to start the main game.
-        self.player_rect = self.player_rect.move(10, 0)
+        # where you have to click the icon to start the main game.
+        self.icon_rect = self.icon_rect.move(10, 0)
+        # Check if player clicks the icon
+        mouse = pygame.mouse
+        if mouse.get_pressed()[0] and self.icon_rect.collidepoint(mouse.get_pos()):
+            restart_event = pygame.event.Event(GameEvent.EVENT_RESTART)
+            pygame.event.post(restart_event)
+
+    def render(self):
         # Fill the background with black
         background_color = (0, 0, 0)
         self.window.fill(background_color)
-        # Render player
-        self.window.blit(self.player_image, self.player_rect)
-
-    def render(self):
-        self.window.blit(self.player_image, self.player_rect)
+        # Render the character
+        self.window.blit(self.player_image, self.icon_rect)
 
 
 class CityScene(Scene):
