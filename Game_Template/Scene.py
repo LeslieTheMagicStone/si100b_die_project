@@ -13,10 +13,18 @@ from BgmPlayer import *
 
 
 class Scene:
-    def __init__(self, window):
+    def __init__(self, window: pygame.Surface):
         ##### Your Code Here ↓ #####
-        pass
+        self.window = window
         ##### Your Code Here ↑ #####
+
+    # Start function called each time the scene is entered
+    def start(self):
+        pass
+
+    # Update function called once per frame
+    def update(self):
+        pass
 
     def trigger_dialog(self, npc):
         ##### Your Code Here ↓ #####
@@ -59,16 +67,26 @@ class Scene:
         ##### Your Code Here ↑ #####
 
 
-class StartMenu:
-    def __init__(self, window):
-        ##### Your Code Here ↓ #####
-        pass
-        ##### Your Code Here ↑ #####
+class MainMenuScene(Scene):
+    def __init__(self, window: pygame.Surface):
+        super().__init__(window)
 
-    def render(self, time):
-        ##### Your Code Here ↓ #####
-        pass
-        ##### Your Code Here ↑ #####
+    def start(self):
+        self.player_image = pygame.image.load(GamePath.player[0])
+        self.player_rect = self.player_image.get_rect()
+
+    def update(self):
+        # A warm-up mini game,
+        # where you have to click the character to start the main game.
+        self.player_rect = self.player_rect.move(10, 0)
+        # Fill the background with black
+        background_color = (0, 0, 0)
+        self.window.fill(background_color)
+        # Render player
+        self.window.blit(self.player_image, self.player_rect)
+
+    def render(self):
+        self.window.blit(self.player_image, self.player_rect)
 
 
 class CityScene(Scene):

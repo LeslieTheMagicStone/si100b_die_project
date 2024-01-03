@@ -6,7 +6,7 @@ import pygame
 
 
 class Portal(pygame.sprite.Sprite):
-    def __init__(self, x, y, GOTO: SceneType):
+    def __init__(self, x, y, GOTO: SceneIndex):
         super().__init__()
 
         ##### Your Code Here ↓ #####

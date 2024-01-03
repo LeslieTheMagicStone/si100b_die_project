@@ -13,38 +13,46 @@ class GameManager:
     def __init__(self):
         # Initialize clock
         self.clock = pygame.time.Clock()
-        # Default scene is main menu
-        self.game_state = GameState.MAIN_MENU
         # Initialize game window
-        self.window = pygame.display.set_mode((WindowSettings.width, WindowSettings.height))
+        self.window = pygame.display.set_mode(
+            (WindowSettings.width, WindowSettings.height)
+        )
         pygame.display.set_caption(WindowSettings.name)
 
-        # Demo
-        player_image = pygame.image.load(GamePath.player[0])
-        player_rect = player_image.get_rect()
-        self.window.blit(player_image,player_rect)
+        # Initialize scenes
+        # (Currently each scene is initialized each time it is entered)
+
+        # Default scene is main menu
+        self.flush_scene(SceneIndex.MAIN_MENU)
 
     def game_reset(self):
         ##### Your Code Here ↓ #####
         pass
         ##### Your Code Here ↑ #####
 
-    # Necessary game components here ↓
+    """ Necessary game components """
+
     def tick(self, fps):
-        self.clock.tick(round(1000 / fps))
+        self.clock.tick(fps)
 
     def get_time(self):
         ##### Your Code Here ↓ #####
         pass
         ##### Your Code Here ↑ #####
 
-    # Scene-related update functions here ↓
-    def flush_scene(self, GOTO: SceneType):
-        ##### Your Code Here ↓ #####
-        pass
-        ##### Your Code Here ↑ #####
+    """ Scene-related update functions """
 
-    # Main update function called once per frame
+    def flush_scene(self, GOTO: SceneIndex):
+        if GOTO == SceneIndex.MAIN_MENU:
+            self.main_menu_scene = MainMenuScene(self.window)
+            self.main_menu_scene.start()
+            self.game_state = GameState.GAME_MAIN_MENU
+        else:
+            raise NotImplementedError(
+                f"The update function of game state: {self.game_state.name} is not implemented yet."
+            )
+
+    # Update function called once per frame
     def update(self):
         # Wait for delta time between each frame
         self.tick(30)
@@ -54,48 +62,12 @@ class GameManager:
 
         for event in events:
             if event.type == pygame.QUIT:
-                # TODO pygame quit
-                sys.exit()
+                pygame.quit()
+                # No need to sys.exit(), right?
 
         # Call update function of current game state
-        if self.game_state == GameState.MAIN_MENU:
-            self.update_main_menu(events)
-
-    def update_main_menu(self, events):
-        pass
-
-    def update_city(self, events):
-        # Deal with EventQueue First
-        ##### Your Code Here ↓ #####
-        pass
-        ##### Your Code Here ↑ #####
-
-        # Then deal with regular updates
-        ##### Your Code Here ↓ #####
-        pass
-        ##### Your Code Here ↑ #####
-
-    def update_wild(self, events):
-        # Deal with EventQueue First
-        ##### Your Code Here ↓ #####
-        pass
-        ##### Your Code Here ↑ #####
-
-        # Then deal with regular updates
-        ##### Your Code Here ↓ #####
-        pass
-        ##### Your Code Here ↑ #####
-
-    def update_boss(self, events):
-        # Deal with EventQueue First
-        ##### Your Code Here ↓ #####
-        pass
-        ##### Your Code Here ↑ #####
-
-        # Then deal with regular updates
-        ##### Your Code Here ↓ #####
-        pass
-        ##### Your Code Here ↑ #####
+        if self.game_state == GameState.GAME_MAIN_MENU:
+            self.main_menu_scene.update()
 
     # Collision-relate update funtions here ↓
     def update_collide(self):
@@ -130,27 +102,12 @@ class GameManager:
         pass
         ##### Your Code Here ↑ #####
 
-    # Render-relate update functions here ↓
+    """ Rendering-related update functions """
+
     def render(self):
-        if self.game_state == GameState.MAIN_MENU:
-            self.render_main_menu()
-
-    def render_main_menu(self):
-        ##### Your Code Here ↓ #####
-        pass
-        ##### Your Code Here ↑ #####
-
-    def render_city(self):
-        ##### Your Code Here ↓ #####
-        pass
-        ##### Your Code Here ↑ #####
-
-    def render_wild(self):
-        ##### Your Code Here ↓ #####
-        pass
-        ##### Your Code Here ↑ #####
-
-    def render_boss(self):
-        ##### Your Code Here ↓ #####
-        pass
-        ##### Your Code Here ↑ #####
+        if self.game_state == GameState.GAME_MAIN_MENU:
+            self.main_menu_scene.render()
+        else:
+            raise NotImplementedError(
+                f"The render function of game state: {self.game_state.name} is not implemented yet."
+            )

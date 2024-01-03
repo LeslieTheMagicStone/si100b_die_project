@@ -47,7 +47,8 @@ class BossSettings:
     coordY = (SceneSettings.tileYnum / 2) * SceneSettings.tileHeight - height / 2
 
 
-class SceneType(Enum):
+class SceneIndex(Enum):
+    MAIN_MENU = 0
     CITY = 1
     WILD = 2
     BOSS = 3
@@ -180,7 +181,7 @@ class PortalSettings:
 
 
 class GameState(Enum):
-    MAIN_MENU = 1
+    GAME_MAIN_MENU = 1
     GAME_TRANSITION = 2
     GAME_OVER = 3
     GAME_WIN = 4
