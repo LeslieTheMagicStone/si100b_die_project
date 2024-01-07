@@ -1,28 +1,11 @@
 # -*- coding:utf-8 -*-
-
+from enum import Enum
 
 class Collidable:
     def __init__(self):
-        self.collidingWith = {
-            "obstacle": False,
-            "npc": False,
-            "monster": False,
-            "portal": False,
-            "boss": False,
-        }
-        self.collidingObject = {
-            "obstacle": [],
-            "npc": None,
-            "monster": None,
-            "portal": None,
-            "boss": None,
-        }
+        self.collisions_enter = []
+        self.collisions_stay = []
+        self.collisions_exit = []
 
-    def is_colliding(self):
-        return (
-            self.collidingWith["obstacle"]
-            or self.collidingWith["npc"]
-            or self.collidingWith["monster"]
-            or self.collidingWith["portal"]
-            or self.collidingWith["boss"]
-        )
+    
+    

@@ -19,13 +19,13 @@ class SceneSettings:
 
 class PlayerSettings:
     # Initial Player Settings
-    playerSpeed = 7
-    playerWidth = 60
-    playerHeight = 55
-    playerHP = 20
-    playerAttack = 5
-    playerDefence = 1
-    playerMoney = 100
+    speed = 7
+    width = 60
+    height = 55
+    hp = 20
+    attack = 5
+    defence = 1
+    money = 100
 
 
 class NPCSettings:
@@ -45,14 +45,6 @@ class BossSettings:
     height = 300
     coordX = (SceneSettings.tileXnum / 2) * SceneSettings.tileWidth - width / 2
     coordY = (SceneSettings.tileYnum / 2) * SceneSettings.tileHeight - height / 2
-
-
-class SceneIndex(Enum):
-    MAIN_MENU = 0
-    CITY = 1
-    WILD = 2
-    BOSS = 3
-    DEMO = 4
 
 
 class DialogSettings:

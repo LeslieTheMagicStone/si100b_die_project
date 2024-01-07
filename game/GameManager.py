@@ -20,21 +20,22 @@ class GameManager:
         )
         pygame.display.set_caption(WindowSettings.name)
 
-        # Initialize player, todo
-        self.player = None
+        # Initialize player
+        self.player = Player(0, 0)
 
         # Initialize scenes
-        self.scenes: Dict[SceneIndex:Scene] = {}
-        self.scenes[SceneIndex.MAIN_MENU] = MainMenuScene(self.pack_scene_transfer_data())
-        self.scenes[SceneIndex.DEMO] = DemoScene(self.pack_scene_transfer_data())
+        self.scenes: List[Scene] = []
+        self.scenes.append(MainMenuScene(self.pack_scene_transfer_data("Main Menu")))
+        self.scenes.append(SafeRoomScene(self.pack_scene_transfer_data("Safe Room")))
+        self.scenes.append(MobRoomScene(self.pack_scene_transfer_data("Mob Room")))
 
         # Default scene is main menu
-        self.flush_scene(SceneIndex.MAIN_MENU)
+        self.flush_scene("Main Menu")
 
     def game_reset(self):
         # TODO reset the scenes
 
-        self.flush_scene(SceneIndex.DEMO)
+        self.flush_scene("Main Menu")
 
     """ Necessary game components """
 
@@ -48,15 +49,24 @@ class GameManager:
 
     """ Scene-related update functions """
 
-    def flush_scene(self, GOTO: SceneIndex):
-        if GOTO in self.scenes.keys():
-            self.scene: Scene = self.scenes[GOTO]
-            self.scene.start()
-            self.game_state = GameState.GAME_PLAY
-        else:
-            raise NotImplementedError(
-                f"The game scene: {GOTO.name} is not implemented yet."
-            )
+    def flush_scene(self, GOTO):
+        if isinstance(GOTO, str):
+            self.flush_scene(self.get_scene_index(GOTO))
+        elif isinstance(GOTO, int):
+            if 0 <= GOTO < len(self.scenes):
+                self.scene: Scene = self.scenes[GOTO]
+                self.scene.start()
+                self.game_state = GameState.GAME_PLAY
+                pygame.display.set_caption(f"{WindowSettings.name} - {self.scene.name}")
+            else:
+                raise IndexError(f"Scene index: {GOTO} out of range")
+
+    def get_scene_index(self, name: str):
+        for index, scene in enumerate(self.scenes):
+            if scene.name == name:
+                return index
+
+        raise NameError(f"Scene name: {name} not found")
 
     # Update function called once per frame
     def update(self):
@@ -72,6 +82,8 @@ class GameManager:
                 # No need to sys.exit(), right?
             elif event.type == GameEvent.EVENT_RESTART:
                 self.game_reset()
+            elif event.type == GameEvent.EVENT_SWITCH:
+                self.flush_scene(event.message)
 
         # Call update function of current game state
         self.scene.update()
@@ -105,8 +117,8 @@ class GameManager:
 
     """ Rendering-related update functions """
 
-    def pack_scene_transfer_data(self) -> SceneTransferData:
-        return SceneTransferData(player=self.player, window=self.window)
+    def pack_scene_transfer_data(self, name) -> SceneTransferData:
+        return SceneTransferData(player=self.player, window=self.window, name=name)
 
     def render(self):
         self.scene.render()
