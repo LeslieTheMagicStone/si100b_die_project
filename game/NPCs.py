@@ -28,22 +28,11 @@ class NPC(pygame.sprite.Sprite, Collidable):
         window.blit(self.image, self.rect)
 
 
+"""DialogNPC就是道具"""
+
+
 class DialogNPC(NPC):
     def __init__(self, x, y, name, dialog):
-        ##### Your Code Here ↓ #####
-        pass
-        ##### Your Code Here ↑ #####
-
-    def update(self, ticks):
-        ##### Your Code Here ↓ #####
-        pass
-        ##### Your Code Here ↑ #####
-
-
-class ShopNPC(NPC):
-    def __init__(self, x, y, name, items, dialog):
-        super().__init__(x, y, name)
-
         ##### Your Code Here ↓ #####
         pass
         ##### Your Code Here ↑ #####
