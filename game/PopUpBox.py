@@ -15,56 +15,34 @@ class DialogBox:
         fontColor: Tuple[int, int, int] = (255, 255, 255),
         bgColor: Tuple[int, int, int, int] = (0, 0, 0, 150),
     ):
-        ##### Your Code Here ↓ #####
-        pass
-        ##### Your Code Here ↑ #####
+        self.window = window
+        self.fontSize = fontSize
+        self.fontColor = fontColor
+        self.font = pygame.font.Font(None, self.fontSize)
 
-    def draw(self):
-        ##### Your Code Here ↓ #####
-        pass
-        ##### Your Code Here ↑ #####
+        """初始化窗口,字体大小和颜色以及类型"""
 
+        self.bg = pygame.Surface(
+            (DialogSettings.boxWidth, DialogSettings.boxHeight), pygame.SRCALPHA
+        )
+        self.bg.fill(bgColor)
+        """背景的颜色是bgColor"""
 
-class BattleBox:
-    def __init__(
-        self,
-        window,
-        player,
-        monster,
-        fontSize: int = BattleSettings.textSize,
-        fontColor: Tuple[int, int, int] = (255, 255, 255),
-        bgColor: Tuple[int, int, int, int] = (0, 0, 0, 200),
-    ):
-        ##### Your Code Here ↓ #####
-        pass
-        ##### Your Code Here ↑ #####
+        self.npc = pygame.image.load(npc)
+        self.npc = pygame.transform.scale(
+            self.npc, (DialogSettings.npcWidth, DialogSettings.npcHeight)
+        )
 
-    def draw(self):
-        ##### Your Code Here ↓ #####
-        pass
-        ##### Your Code Here ↑ #####
+        """npc图像更新"""
 
-
-class ShoppingBox:
-    def __init__(
-        self,
-        window,
-        npc,
-        player,
-        fontSize: int = DialogSettings.textSize,
-        fontColor: Tuple[int, int, int] = (255, 255, 255),
-        bgColor: Tuple[int, int, int, int] = (0, 0, 0, 150),
-    ):
-        ##### Your Code Here ↓ #####
-        pass
-        ##### Your Code Here ↑ #####
-
-    def buy(self):
-        ##### Your Code Here ↓ #####
-        pass
-        ##### Your Code Here ↑ #####
-
-    def draw(self):
-        ##### Your Code Here ↓ #####
-        pass
-        ##### Your Code Here ↑ #####
+    def draw(self, input_: str):
+        self.window.blit(
+            self.bg, (DialogSettings.boxStartX, DialogSettings.boxStartY)
+        )  # 绘制背景
+        self.window.blit(
+            self.npc, (DialogSettings.npcCoordX, DialogSettings.npcCoordY)
+        )  # 绘制npc
+        text_surface = self.font.render(input_, True, self.fontColor)  # 创建文本表面
+        self.window.blit(
+            text_surface, (DialogSettings.boxStartX, DialogSettings.boxStartY)
+        )  # 绘制文本
