@@ -3,13 +3,22 @@ from pygame import *
 
 
 class Buff:
-    def update(self):
-        pass
-
-
-class Invulnerable:
-    def __init__(self, damageable: Damageable, time=1) -> None:
+    def start(self):
         pass
 
     def update(self):
         pass
+
+    def end(self):
+        pass
+
+
+class Invulnerable(Buff):
+    def __init__(self, damageable: Damageable, duration=1) -> None:
+        pass
+
+    def start(self):
+        pass
+
+    def update(self):
+        pass 

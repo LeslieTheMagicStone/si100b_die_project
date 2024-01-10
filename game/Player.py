@@ -8,14 +8,17 @@ from Portal import *
 from EventSystem import *
 from Math import *
 from NPCs import *
+from globals import *
+from Generator import *
 
 
-class Player(pygame.sprite.Sprite, Collidable, Damageable):
+class Player(pygame.sprite.Sprite, Collidable, Damageable, MonoBehavior):
     def __init__(self, x, y):
         # Must initialize everything one by one here
         pygame.sprite.Sprite.__init__(self)
-        Collidable.__init__(self)
+        Collidable.__init__(self, need_collision_list=True)
         Damageable.__init__(self)
+        MonoBehavior.__init__(self)
 
         # Image related
         self.image = pygame.image.load(GamePath.player[0])
@@ -30,6 +33,9 @@ class Player(pygame.sprite.Sprite, Collidable, Damageable):
         self.hp = PlayerSettings.hp
         self.attack = PlayerSettings.attack
         self.defence = PlayerSettings.defence
+        # Fire related
+        self.fire_cd = 0.5
+        self.fire_timer = 0
 
     def reset_pos(self, x=WindowSettings.width // 2, y=WindowSettings.height // 2):
         self.rect.center = (x, y)
@@ -60,6 +66,27 @@ class Player(pygame.sprite.Sprite, Collidable, Damageable):
         movement = Math.dot(Math.normalize((dx, dy)), self.speed)
 
         self.rect.move_ip(movement[0], movement[1])
+
+    def handle_fire(self):
+        if self.fire_timer > 0:
+            self.fire_timer -= Time.delta_time
+            return
+
+        keys = pygame.key.get_pressed()
+
+        dx = dy = 0
+
+        if keys[pygame.K_w]:
+            dy -= 1
+        if keys[pygame.K_s]:
+            dy += 1
+        if keys[pygame.K_a]:
+            dx -= 1
+        if keys[pygame.K_d]:
+            dx += 1
+
+        velocity = Math.dot(Math.normalize((dx, dy)), ProjectileSettings.bulletSpeed)
+        bullet = Generator.generate(GeneratableType.BULLET, velocity)
 
     def handle_damage(self, damage):
         damage = max(0, damage - self.defence)

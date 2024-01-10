@@ -14,6 +14,7 @@ from Player import *
 from SceneTransferData import *
 from EventSystem import *
 from Math import *
+from Projectiles import *
 
 
 class Scene:
@@ -21,9 +22,10 @@ class Scene:
         self.window = data.window
         self.player = data.player
         self.name = data.name
-
-        self.portals: list[Portal] = []
-        self.NPCs: list[NPC] = []
+        # List of all game objects in the scene
+        self._objects: list[object] = []
+        # List of all collidables in the scene
+        self._collidables: list[Collidable] = []
 
     # Start function called each time the scene is entered
     def start(self):
@@ -34,72 +36,46 @@ class Scene:
         pass
 
     def update_collision(self):
-        # Clear all objects in exit list
-        self.player.collisions_exit = []
+        for collidable in self._collidables:
+            # Only need to update those collidables which need collision list
+            if not collidable.need_collision_list:
+                continue
 
-        # Update stay list
-        for other in self.player.collisions_stay:
-            if not self.player.rect.colliderect(other):
-                self.player.collisions_stay.remove(other)
-                self.player.collisions_exit.append(other)
+            # Clear all objects in exit list
+            collidable.collisions_exit = []
 
-        # Update enter list
-        for other in self.player.collisions_enter:
-            self.player.collisions_enter.remove(other)
-            if self.player.rect.colliderect(other):
-                self.player.collisions_stay.append(other)
-            else:
-                self.player.collisions_exit.append(other)
-        # Check portal collision
-        for portal in self.portals:
-            if portal.rect.colliderect(self.player.rect):
-                if portal not in self.player.collisions_stay:
-                    self.player.collisions_enter.append(portal)
-        # Check NPC collision
-        for npc in self.NPCs:
-            if npc.rect.colliderect(self.player.rect):
-                if npc not in self.player.collisions_stay:
-                    self.player.collisions_enter.append(npc)
+            # Update stay list
+            for other in collidable.collisions_stay:
+                if not collidable.rect.colliderect(other):
+                    collidable.collisions_stay.remove(other)
+                    collidable.collisions_exit.append(other)
 
-    def trigger_dialog(self, npc):
-        ##### Your Code Here ↓ #####
-        pass
-        ##### Your Code Here ↑ #####
+            # Update enter list
+            for other in collidable.collisions_enter:
+                collidable.collisions_enter.remove(other)
+                if collidable.rect.colliderect(other):
+                    collidable.collisions_stay.append(other)
+                else:
+                    collidable.collisions_exit.append(other)
+            # Check new collision enters
+            for other in self._collidables:
+                if other.rect.colliderect(collidable.rect):
+                    if other not in collidable.collisions_stay:
+                        collidable.collisions_enter.append(other)
 
-    def end_dialog(self):
-        ##### Your Code Here ↓ #####
-        pass
-        ##### Your Code Here ↑ #####
-
-    def trigger_battle(self, player):
-        ##### Your Code Here ↓ #####
-        pass
-        ##### Your Code Here ↑ #####
-
-    def end_battle(self):
-        ##### Your Code Here ↓ #####
-        pass
-        ##### Your Code Here ↑ #####
-
-    def trigger_shop(self, npc, player):
-        ##### Your Code Here ↓ #####
-        pass
-        ##### Your Code Here ↑ #####
-
-    def end_shop(self):
-        ##### Your Code Here ↓ #####
-        pass
-        ##### Your Code Here ↑ #####
+    # Append object to scene object list
+    def append_object(self, obj):
+        self._objects.append(obj)
+        if isinstance(obj, Collidable):
+            self._collidables.append(obj)
 
     def update_camera(self, player):
         ##### Your Code Here ↓ #####
         pass
         ##### Your Code Here ↑ #####
 
-    def render(self, player):
-        ##### Your Code Here ↓ #####
+    def render(self):
         pass
-        ##### Your Code Here ↑ #####
 
 
 class MainMenuScene(Scene):
@@ -108,6 +84,7 @@ class MainMenuScene(Scene):
         self.icon_rect = self.player_image.get_rect()
 
     def update(self):
+        super().update()
         # A warm-up mini game,
         # where you have to click the icon to start the main game.
         self.icon_rect = self.icon_rect.move(10, 0)
@@ -131,6 +108,7 @@ class SafeRoomScene(Scene):
         self.portals.append(Portal(123, 123, "Mob Room"))
 
     def update(self):
+        super().update()
         self.update_collision()
         self.player.update()
 
@@ -152,12 +130,8 @@ class MobRoomScene(Scene):
         # Init monsters
         self.monster = Monster(self.player.rect, 10, 10)
 
-        print(Math.norm((1, 2)))
-        print(Math.normalize((1, 1)))
-        print(Math.normalize((1, -1)))
-        print(Math.normalize((0, 0)))
-
     def update(self):
+        super().update()
         self.update_collision()
         self.player.update()
         self.monster.update()

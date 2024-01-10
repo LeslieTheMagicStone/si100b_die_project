@@ -173,6 +173,12 @@ class PortalSettings:
     coordY = (SceneSettings.tileYnum / 2) * SceneSettings.tileHeight - height / 2
 
 
+class ProjectileSettings:
+    bulletSpeed = 10
+
+class GeneratableType:
+    BULLET = 1
+
 class GameState(Enum):
     GAME_MAIN_MENU = 1
     GAME_TRANSITION = 2
@@ -189,4 +195,5 @@ class GameEvent:
     EVENT_RESTART = pygame.USEREVENT + 4
     EVENT_SHOP = pygame.USEREVENT + 5
     EVENT_HURT = pygame.USEREVENT + 6
+    EVENT_GENERATE = pygame.USEREVENT + 7
 

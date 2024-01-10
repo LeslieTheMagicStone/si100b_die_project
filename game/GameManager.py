@@ -14,6 +14,8 @@ class GameManager:
     def __init__(self):
         # Initialize clock
         self.clock = pygame.time.Clock()
+        # Time scale used for pause or speeding
+        self.time_scale = 1
         # Initialize game window
         self.window = pygame.display.set_mode(
             (WindowSettings.width, WindowSettings.height)
@@ -40,7 +42,8 @@ class GameManager:
     """ Necessary game components """
 
     def tick(self, fps):
-        self.clock.tick(fps)
+        Time.delta_time = self.clock.tick(fps) / 1000
+        Time.time += Time.delta_time * self.time_scale
 
     def get_time(self):
         return pygame.time.get_ticks() / 1000
@@ -82,6 +85,8 @@ class GameManager:
                 self.game_reset()
             elif event.type == GameEvent.EVENT_SWITCH:
                 self.flush_scene(event.message)
+            elif event.type == GameEvent.EVENT_GENERATE:
+                self.scene.append_object(event.message)
 
         # Call update function of current game state
         self.scene.update()
