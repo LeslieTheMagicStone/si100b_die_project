@@ -13,6 +13,7 @@ from BgmPlayer import *
 from Player import *
 from SceneTransferData import *
 from EventSystem import *
+from Math import *
 
 
 class Scene:
@@ -22,6 +23,7 @@ class Scene:
         self.name = data.name
 
         self.portals: list[Portal] = []
+        self.NPCs: list[NPC] = []
 
     # Start function called each time the scene is entered
     def start(self):
@@ -53,7 +55,11 @@ class Scene:
             if portal.rect.colliderect(self.player.rect):
                 if portal not in self.player.collisions_stay:
                     self.player.collisions_enter.append(portal)
-            
+        # Check NPC collision
+        for npc in self.NPCs:
+            if npc.rect.colliderect(self.player.rect):
+                if npc not in self.player.collisions_stay:
+                    self.player.collisions_enter.append(npc)
 
     def trigger_dialog(self, npc):
         ##### Your Code Here ↓ #####
@@ -143,11 +149,21 @@ class MobRoomScene(Scene):
     def start(self):
         self.player.reset_pos()
 
+        # Init monsters
+        self.monster = Monster(self.player.rect, 10, 10)
+
+        print(Math.norm((1, 2)))
+        print(Math.normalize((1, 1)))
+        print(Math.normalize((1, -1)))
+        print(Math.normalize((0, 0)))
+
     def update(self):
         self.update_collision()
         self.player.update()
+        self.monster.update()
 
     def render(self):
         background_color = (0, 0, 0)
         self.window.fill(background_color)
         self.player.draw(self.window)
+        self.monster.draw(self.window)

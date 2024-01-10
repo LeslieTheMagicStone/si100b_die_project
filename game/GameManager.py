@@ -30,7 +30,7 @@ class GameManager:
         self.scenes.append(MobRoomScene(self.pack_scene_transfer_data("Mob Room")))
 
         # Default scene is main menu
-        self.flush_scene("Main Menu")
+        self.flush_scene("Mob Room")
 
     def game_reset(self):
         # TODO reset the scenes
@@ -43,9 +43,7 @@ class GameManager:
         self.clock.tick(fps)
 
     def get_time(self):
-        ##### Your Code Here ↓ #####
-        pass
-        ##### Your Code Here ↑ #####
+        return pygame.time.get_ticks() / 1000
 
     """ Scene-related update functions """
 

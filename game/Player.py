@@ -6,13 +6,16 @@ from Settings import *
 from Attributes import *
 from Portal import *
 from EventSystem import *
+from Math import *
+from NPCs import *
 
 
-class Player(pygame.sprite.Sprite, Collidable):
+class Player(pygame.sprite.Sprite, Collidable, Damageable):
     def __init__(self, x, y):
         # Must initialize everything one by one here
         pygame.sprite.Sprite.__init__(self)
         Collidable.__init__(self)
+        Damageable.__init__(self)
 
         # Image related
         self.image = pygame.image.load(GamePath.player[0])
@@ -60,21 +63,23 @@ class Player(pygame.sprite.Sprite, Collidable):
         if keys[pygame.K_d]:
             dx += 1
 
-        norm = (dx**2 + dy**2) ** 0.5
-        if norm != 0:
-            dx /= norm
-            dy /= norm
+        movement = Math.dot(Math.normalize((dx, dy)), self.speed)
 
-        dx *= self.speed
-        dy *= self.speed
+        self.rect.move_ip(movement[0], movement[1])
 
-        self.rect = self.rect.move(dx, dy)
+    def handle_damage(self, damage):
+        damage = max(0, damage - self.defence)
+        self.hp = max(0, self.hp - damage)
+        EventSystem.fire_hurt_event(damage)
 
     def handle_collisions(self):
         for enter in self.collisions_enter:
             if isinstance(enter, Portal):
                 EventSystem.fire_switch_event(enter.GOTO)
-                
+
+        for stay in self.collisions_stay:
+            if isinstance(stay, Monster):
+                self.handle_damage(stay.attack)
 
     def draw(self, window: pygame.Surface, dx=0, dy=0):
         window.blit(self.image, self.rect)
