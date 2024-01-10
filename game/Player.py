@@ -31,12 +31,6 @@ class Player(pygame.sprite.Sprite, Collidable, Damageable):
         self.attack = PlayerSettings.attack
         self.defence = PlayerSettings.defence
 
-    def attr_update(self, addCoins=0, addHP=0, addAttack=0, addDefence=0):
-        self.coins += addCoins
-        self.hp += addHP
-        self.attack += addAttack
-        self.defence += addDefence
-
     def reset_pos(self, x=WindowSettings.width // 2, y=WindowSettings.height // 2):
         self.rect.center = (x, y)
 
