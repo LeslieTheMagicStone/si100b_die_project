@@ -87,6 +87,8 @@ class GameManager:
                 self.flush_scene(event.message)
             elif event.type == GameEvent.EVENT_GENERATE:
                 self.scene.append_object(event.message)
+            elif event.type == GameEvent.EVENT_DIALOG:
+                self.scene.draw_dialogbox()
 
         # Call update function of current game state
         self.scene.update()
