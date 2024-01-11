@@ -33,9 +33,11 @@ class NPC(pygame.sprite.Sprite, Collidable):
 
 class DialogNPC(NPC):
     def __init__(self, x, y, name, dialog):
-        ##### Your Code Here ↓ #####
-        pass
-        ##### Your Code Here ↑ #####
+        super().__init__()
+        self.image = pygame.image.load(GamePath.monster)
+        self.image = pygame.transform.scale(
+            self.image, (NPCSettings.npcWidth, NPCSettings.npcHeight)
+        )
 
     def update(self, ticks):
         ##### Your Code Here ↓ #####
