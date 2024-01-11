@@ -22,7 +22,6 @@ class Scene:
         self.window = data.window
         self.player = data.player
         self.name = data.name
-        self.dialogbox = data.dialogbox
         # List of all game objects in the scene
         self._objects: list[object] = []
         # List of all collidables in the scene
@@ -31,6 +30,11 @@ class Scene:
         self._mono_behaviors: list[MonoBehavior] = []
         # List of all renderables
         self._renderables: list[Renderable] = []
+
+        # Initialize a global dialog box
+        self.dialog_box = DialogBox()
+        self.hide_dialog_box()
+
 
         # Append player to the scene object list
         self.append_object(self.player)
@@ -101,8 +105,16 @@ class Scene:
         for renderable in self._renderables:
             renderable.draw(self.window)
 
-    def draw_dialogbox(self):
-        self.append_object(self.dialogbox)
+    def show_dialog_box(self, message):
+        npc = message[0]
+        text = message[1]
+
+        self.dialog_box.set_npc(npc)
+        self.dialog_box.set_text(text)
+        self.dialog_box.set_active(True)
+
+    def hide_dialog_box(self):
+        self.dialog_box.set_active(False)
 
 
 class MainMenuScene(Scene):

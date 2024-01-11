@@ -19,6 +19,6 @@ class EventSystem:
         pygame.event.post(generate_event)
 
     @classmethod
-    def fire_dialog_event(cls):
-        generate_event = pygame.event.Event(GameEvent.EVENT_DIALOG)
+    def fire_dialog_event(cls, NPC, text):
+        generate_event = pygame.event.Event(GameEvent.EVENT_DIALOG, message=(NPC, text))
         pygame.event.post(generate_event)

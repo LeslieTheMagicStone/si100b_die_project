@@ -7,11 +7,12 @@ from Attributes import *
 from Math import *
 
 
-class NPC(pygame.sprite.Sprite, Collidable):
+class NPC(pygame.sprite.Sprite, Collidable, Renderable):
     def __init__(self, x, y, name):
         # Initialize father classes
         pygame.sprite.Sprite.__init__(self)
         Collidable.__init__(self)
+        Renderable.__init__(self, render_index=4)
 
         self.image = None
         self.rect: pygame.Rect = None

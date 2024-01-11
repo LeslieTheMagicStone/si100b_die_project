@@ -7,9 +7,14 @@ class MonoBehavior:
         pass
 
 class Renderable:
-    def __init__(self, render_index) -> None:
+    def __init__(self, render_index, is_active = True) -> None:
         # Decides render sequence, object with smallest index renders first
         self.render_index = render_index
+        # Decides if the object need to render
+        self.is_active = is_active
+
+    def set_active(self, value):
+        self.is_active = value
 
     def draw(self, window: pygame.Surface):
         pass

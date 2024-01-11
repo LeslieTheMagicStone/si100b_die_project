@@ -98,8 +98,8 @@ class Player(pygame.sprite.Sprite, Collidable, Damageable, MonoBehavior, Rendera
         for enter in self.collisions_enter:
             if isinstance(enter, Portal):
                 EventSystem.fire_switch_event(enter.GOTO)
-            if isinstance(stay, DialogNPC):
-                EventSystem.fire_dialog_event()
+            if isinstance(enter, DialogNPC):
+                EventSystem.fire_dialog_event("接触DialogNPC之后Event")
             """接触DialogNPC之后Event"""
 
         for stay in self.collisions_stay:

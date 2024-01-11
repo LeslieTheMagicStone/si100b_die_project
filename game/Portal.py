@@ -6,10 +6,11 @@ import pygame
 from Attributes import *
 
 
-class Portal(pygame.sprite.Sprite, Renderable):
+class Portal(pygame.sprite.Sprite, Renderable, Collidable):
     def __init__(self, x, y, GOTO):
         pygame.sprite.Sprite.__init__(self)
         Renderable.__init__(self, render_index=2)
+        Collidable.__init__(self)
 
         self.image = pygame.image.load(GamePath.portal)
         self.image = pygame.transform.scale(

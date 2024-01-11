@@ -32,7 +32,7 @@ class GameManager:
         self.scenes.append(MobRoomScene(self.pack_scene_transfer_data("Mob Room")))
 
         # Default scene is main menu
-        self.flush_scene("Mob Room")
+        self.flush_scene("Safe Room")
 
     def game_reset(self):
         # TODO reset the scenes
@@ -88,7 +88,7 @@ class GameManager:
             elif event.type == GameEvent.EVENT_GENERATE:
                 self.scene.append_object(event.message)
             elif event.type == GameEvent.EVENT_DIALOG:
-                self.scene.draw_dialogbox()
+                self.scene.show_dialog_box(event.message)
 
         # Call update function of current game state
         self.scene.update()
