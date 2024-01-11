@@ -6,6 +6,13 @@ class MonoBehavior:
     def update(self):
         pass
 
+class Renderable:
+    def __init__(self, render_index) -> None:
+        # Decides render sequence, object with smallest index renders first
+        self.render_index = render_index
+
+    def draw(self, window: pygame.Surface):
+        pass
 
 
 # Collidables will be counted in the update_collision() function in the Scene

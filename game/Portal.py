@@ -3,11 +3,13 @@
 from Settings import *
 
 import pygame
+from Attributes import *
 
 
-class Portal(pygame.sprite.Sprite):
+class Portal(pygame.sprite.Sprite, Renderable):
     def __init__(self, x, y, GOTO):
-        super().__init__()
+        pygame.sprite.Sprite.__init__(self)
+        Renderable.__init__(self, render_index=2)
 
         self.image = pygame.image.load(GamePath.portal)
         self.image = pygame.transform.scale(

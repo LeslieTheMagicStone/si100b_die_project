@@ -91,10 +91,6 @@ class GameManager:
         # Call update function of current game state
         self.scene.update()
 
-    # Test github collab mechanic
-    def text2(self):
-        pass
-
     # Collision-relate update funtions here ↓
     def update_collide(self):
         # Player -> Obstacles
@@ -129,6 +125,3 @@ class GameManager:
 
     def render(self):
         self.scene.render()
-
-    def text_one(self):
-        pass

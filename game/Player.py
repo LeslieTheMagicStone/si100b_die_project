@@ -12,13 +12,14 @@ from globals import *
 from Generator import *
 
 
-class Player(pygame.sprite.Sprite, Collidable, Damageable, MonoBehavior):
+class Player(pygame.sprite.Sprite, Collidable, Damageable, MonoBehavior, Renderable):
     def __init__(self, x, y):
         # Must initialize everything one by one here
         pygame.sprite.Sprite.__init__(self)
         Collidable.__init__(self, need_collision_list=True)
         Damageable.__init__(self)
         MonoBehavior.__init__(self)
+        Renderable.__init__(self, render_index=1)
 
         # Image related
         self.image = pygame.image.load(GamePath.player[0])
