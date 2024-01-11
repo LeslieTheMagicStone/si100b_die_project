@@ -32,7 +32,7 @@ class NPC(pygame.sprite.Sprite, Collidable, Renderable):
 """DialogNPC就是道具"""
 
 
-class DialogNPC(NPC, Collidable):
+class DialogNPC(NPC):
     def __init__(self, x, y, name, dialog, player_rect: pygame.Rect):
         super().__init__()
         self.image = pygame.image.load(GamePath.monster)
@@ -44,11 +44,8 @@ class DialogNPC(NPC, Collidable):
 
         self.player_rect = player_rect
 
-    def update(self, ticks):
-        dir = (self.player_rect.x - self.rect.x, self.player_rect.y - self.rect.y)
 
-
-class Monster(pygame.sprite.Sprite):
+class Monster(NPC):
     def __init__(
         self,
         player_rect: pygame.Rect,
