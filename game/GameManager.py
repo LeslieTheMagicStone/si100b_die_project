@@ -125,3 +125,6 @@ class GameManager:
 
     def render(self):
         self.scene.render()
+
+    def text_one(self):
+        pass
