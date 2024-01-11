@@ -22,6 +22,7 @@ class Scene:
         self.window = data.window
         self.player = data.player
         self.name = data.name
+        self.dialogbox = data.dialogbox
         # List of all game objects in the scene
         self._objects: list[object] = []
         # List of all collidables in the scene
@@ -76,6 +77,9 @@ class Scene:
 
     def render(self):
         pass
+
+    def draw_dialogbox(self):
+        self.append_object(self.dialogbox)
 
 
 class MainMenuScene(Scene):

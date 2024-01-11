@@ -87,13 +87,11 @@ class GameManager:
                 self.flush_scene(event.message)
             elif event.type == GameEvent.EVENT_GENERATE:
                 self.scene.append_object(event.message)
+            elif event.type == GameEvent.EVENT_DIALOG:
+                self.scene.draw_dialogbox()
 
         # Call update function of current game state
         self.scene.update()
-
-    # Test github collab mechanic
-    def text2(self):
-        pass
 
     # Collision-relate update funtions here ↓
     def update_collide(self):
@@ -129,6 +127,3 @@ class GameManager:
 
     def render(self):
         self.scene.render()
-
-    def text_one(self):
-        pass

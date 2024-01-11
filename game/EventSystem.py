@@ -17,3 +17,8 @@ class EventSystem:
     def fire_generate_event(cls, obj):
         generate_event = pygame.event.Event(GameEvent.EVENT_GENERATE, message=obj)
         pygame.event.post(generate_event)
+
+    @classmethod
+    def fire_dialog_event(cls):
+        generate_event = pygame.event.Event(GameEvent.EVENT_DIALOG)
+        pygame.event.post(generate_event)
