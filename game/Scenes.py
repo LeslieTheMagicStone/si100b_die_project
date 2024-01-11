@@ -85,10 +85,10 @@ class Scene:
             self._mono_behaviors.append(obj)
         if isinstance(obj, Renderable):
             self._renderables.append(obj)
-    
+
     # Sort renderables from the lowest index to the highest
     def sort_renderables(self):
-        self._renderables = sorted(self._renderables, key=lambda x:x.render_index)
+        self._renderables = sorted(self._renderables, key=lambda x: x.render_index)
 
     def update_camera(self, player):
         ##### Your Code Here ↓ #####
@@ -162,3 +162,9 @@ class MobRoomScene(Scene):
         self.window.fill(background_color)
         # Render renderable objects
         super().render()
+
+
+class ToolRoomScence(Scene):
+    """append_object(self.dialogNPC)"""
+
+    pass
