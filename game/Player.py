@@ -2,6 +2,9 @@
 
 import pygame
 
+import generator
+
+
 from Settings import *
 from Attributes import *
 from Portal import *
@@ -9,7 +12,7 @@ from EventSystem import *
 from Math import *
 from NPCs import *
 from globals import *
-from Generator import *
+from Projectiles import *
 
 
 class Player(pygame.sprite.Sprite, Collidable, Damageable, MonoBehavior, Renderable):
@@ -19,7 +22,7 @@ class Player(pygame.sprite.Sprite, Collidable, Damageable, MonoBehavior, Rendera
         Collidable.__init__(self, need_collision_list=True)
         Damageable.__init__(self)
         MonoBehavior.__init__(self)
-        Renderable.__init__(self, render_index=1)
+        Renderable.__init__(self, render_index=RenderIndex.player)
 
         # Image related
         self.image = pygame.image.load(GamePath.player[0])
@@ -87,7 +90,7 @@ class Player(pygame.sprite.Sprite, Collidable, Damageable, MonoBehavior, Rendera
             dx += 1
 
         velocity = Math.dot(Math.normalize((dx, dy)), ProjectileSettings.bulletSpeed)
-        bullet = Generator.generate(GeneratableType.BULLET, velocity)
+        bullet = generator.generate(Bullet, velocity)
 
     def handle_damage(self, damage):
         damage = max(0, damage - self.defence)

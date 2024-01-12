@@ -167,17 +167,22 @@ class GamePath:
 
 
 class PortalSettings:
-    width = 320
-    height = 320
+    width = 160
+    height = 160
     coordX = (SceneSettings.tileXnum - 10) * SceneSettings.tileWidth - width / 2
     coordY = (SceneSettings.tileYnum / 2) * SceneSettings.tileHeight - height / 2
+
+class RenderIndex:
+    portal = 0
+    player = 1
+    monster = 2
+    npc = 4
+
 
 
 class ProjectileSettings:
     bulletSpeed = 10
 
-class GeneratableType:
-    BULLET = 1
 
 class GameState(Enum):
     GAME_MAIN_MENU = 1

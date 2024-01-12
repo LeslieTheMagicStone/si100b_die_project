@@ -4,7 +4,7 @@ import pygame
 # MonoBehaviors have update() function
 class MonoBehavior:
     def update(self):
-        pass
+        raise NotImplementedError(f"The updated() method is not implemented in {self}")
 
 class Renderable:
     def __init__(self, render_index, is_active = True) -> None:
@@ -17,7 +17,7 @@ class Renderable:
         self.is_active = value
 
     def draw(self, window: pygame.Surface):
-        pass
+        raise NotImplementedError(f"The draw() method is not implemented in {self}")
 
 
 # Collidables will be counted in the update_collision() function in the Scene

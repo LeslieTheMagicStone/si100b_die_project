@@ -32,7 +32,7 @@ class GameManager:
         self.scenes.append(MobRoomScene(self.pack_scene_transfer_data("Mob Room")))
 
         # Default scene is main menu
-        self.flush_scene("Safe Room")
+        self.flush_scene("Main Menu")
 
     def game_reset(self):
         # TODO reset the scenes
@@ -74,6 +74,13 @@ class GameManager:
         # Wait for delta time between each frame
         self.tick(30)
 
+        # Handle event
+        self.handle_event()
+
+        # Call update function of current game state
+        self.scene.update()
+
+    def handle_event(self):
         # Get events of current frame
         events = pygame.event.get()
 
@@ -89,9 +96,6 @@ class GameManager:
                 self.scene.append_object(event.message)
             elif event.type == GameEvent.EVENT_DIALOG:
                 self.scene.show_dialog_box(event.message)
-
-        # Call update function of current game state
-        self.scene.update()
 
     # Collision-relate update funtions here ↓
     def update_collide(self):

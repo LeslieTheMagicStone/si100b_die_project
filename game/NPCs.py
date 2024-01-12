@@ -7,14 +7,15 @@ from Attributes import *
 from Math import *
 
 
-class NPC(pygame.sprite.Sprite, Collidable, Renderable):
-    def __init__(self, x, y, name):
+class NPC(pygame.sprite.Sprite, Collidable, Renderable, MonoBehavior):
+    def __init__(self, x, y, name, render_index=RenderIndex.npc):
         # Initialize father classes
         pygame.sprite.Sprite.__init__(self)
         Collidable.__init__(self)
-        Renderable.__init__(self, render_index=4)
+        Renderable.__init__(self, render_index)
+        MonoBehavior.__init__(self)
 
-        self.image = None
+        self.image: pygame.Surface = None
         self.rect: pygame.Rect = None
 
     def update(self):
@@ -57,7 +58,7 @@ class Monster(NPC):
         defence=1,
         money=15,
     ):
-        super().__init__()
+        super().__init__(x, y, name="Monster", render_index=RenderIndex.monster)
         # Image and rect related
         self.image = pygame.image.load(GamePath.monster)
         self.image = pygame.transform.scale(

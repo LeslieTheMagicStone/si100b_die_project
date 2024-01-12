@@ -4,6 +4,8 @@ import pygame
 import Maps
 from random import randint
 
+import generator
+
 from enum import Enum
 from Settings import *
 from NPCs import *
@@ -34,7 +36,6 @@ class Scene:
         # Initialize a global dialog box
         self.dialog_box = DialogBox()
         self.hide_dialog_box()
-
 
         # Append player to the scene object list
         self.append_object(self.player)
@@ -144,7 +145,7 @@ class SafeRoomScene(Scene):
     def start(self):
         self.player.reset_pos()
         # Init portals
-        self.append_object(Portal(123, 123, "Mob Room"))
+        generator.generate(Portal(123, 123, "Mob Room"))
 
     def render(self):
         # Fill the background with black
@@ -158,15 +159,12 @@ class MobRoomScene(Scene):
     def start(self):
         self.player.reset_pos()
 
-        # Init monsters, TODO: use generator to do this
-        self.monster = Monster(self.player.rect, 10, 10)
-        self.append_object(self.monster)
+        # Init monsters
+        monster = Monster(self.player.rect, 10, 10)
+        generator.generate(monster)
 
     def update(self):
         super().update()
-
-        # DEBUG: print params
-        print(self._renderables)
 
     def render(self):
         # Render background with black
