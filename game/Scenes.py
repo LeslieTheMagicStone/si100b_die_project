@@ -3,10 +3,10 @@
 import pygame
 import Maps
 from random import randint
+from SceneTransferData import SceneTransferData
 
 import generator
 
-from enum import Enum
 from Settings import *
 from NPCs import *
 from PopUpBox import *
@@ -17,6 +17,7 @@ from SceneTransferData import *
 from EventSystem import *
 from Math import *
 from Projectiles import *
+from Maps import *
 
 
 class Scene:
@@ -47,12 +48,13 @@ class Scene:
     # Update function called once per frame
     def update(self):
         # Update collision lists of the collidables
-        self.update_collision()
+        self.update_collision_list()
         # Call update functions of mono behaviours
         for mb in self._mono_behaviors:
             mb.update()
 
-    def update_collision(self):
+    # Update the collision list of the collidables needing it
+    def update_collision_list(self):
         for collidable in self._collidables:
             # Only need to update those collidables which need collision list
             if not collidable.need_collision_list:
@@ -90,6 +92,7 @@ class Scene:
             self._mono_behaviors.append(obj)
         if isinstance(obj, Renderable):
             self._renderables.append(obj)
+
 
     # Sort renderables from the lowest index to the highest
     def sort_renderables(self):
@@ -142,10 +145,18 @@ class MainMenuScene(Scene):
 
 
 class SafeRoomScene(Scene):
+    def __init__(self, data: SceneTransferData):
+        super().__init__(data)
+
+        # Init tile map
+        map_obj = Maps.gen_safety_room_map()
+        self.tile_map = generator.generate(TileMap(map_obj), self)
+
+        # Init portals
+        generator.generate(Portal(123, 123, "Mob Room"), self)
+
     def start(self):
         self.player.reset_pos()
-        # Init portals
-        generator.generate(Portal(123, 123, "Mob Room"))
 
     def render(self):
         # Fill the background with black
@@ -156,12 +167,15 @@ class SafeRoomScene(Scene):
 
 
 class MobRoomScene(Scene):
-    def start(self):
-        self.player.reset_pos()
+    def __init__(self, data: SceneTransferData):
+        super().__init__(data)
 
         # Init monsters
         monster = Monster(self.player.rect, 10, 10)
-        generator.generate(monster)
+        generator.generate(monster, self)
+
+    def start(self):
+        self.player.reset_pos()
 
     def update(self):
         super().update()
@@ -181,5 +195,3 @@ class ToolRoomScence(Scene):
         self.player.reset_pos()
 
         self.dialogNPC = DialogNPC(self.player)
-
-    pass

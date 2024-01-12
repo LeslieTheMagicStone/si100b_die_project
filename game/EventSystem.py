@@ -14,8 +14,10 @@ class EventSystem:
         pygame.event.post(hurt_event)
 
     @classmethod
-    def fire_generate_event(cls, obj):
-        generate_event = pygame.event.Event(GameEvent.EVENT_GENERATE, message=obj)
+    def fire_generate_event(cls, obj, scene=None):
+        generate_event = pygame.event.Event(
+            GameEvent.EVENT_GENERATE, message=(obj, scene)
+        )
         pygame.event.post(generate_event)
 
     @classmethod

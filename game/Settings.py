@@ -177,6 +177,8 @@ class RenderIndex:
     player = 1
     monster = 2
     npc = 4
+    block = -1
+    tileMap = -2
 
 
 
