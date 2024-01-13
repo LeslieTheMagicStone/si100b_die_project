@@ -19,7 +19,7 @@ class Player(pygame.sprite.Sprite, Collidable, Damageable, MonoBehavior, Rendera
     def __init__(self, x, y):
         # Must initialize everything one by one here
         pygame.sprite.Sprite.__init__(self)
-        Collidable.__init__(self, need_collision_list=True)
+        Collidable.__init__(self, need_collision_list=True, is_rigid=True)
         Damageable.__init__(self)
         MonoBehavior.__init__(self)
         Renderable.__init__(self, render_index=RenderIndex.player)
@@ -31,6 +31,9 @@ class Player(pygame.sprite.Sprite, Collidable, Damageable, MonoBehavior, Rendera
         )
         self.rect = self.image.get_rect()
         self.rect.center = (x, y)
+        # Scale the rect by 0.5x to make collision trigger more realistic
+        resize_amount = [-self.rect.width // 2, -self.rect.height // 2]
+        self.rect.inflate_ip(resize_amount[0], resize_amount[1])
         # Attribute related
         self.speed = PlayerSettings.speed
         self.coins = 0
@@ -43,11 +46,6 @@ class Player(pygame.sprite.Sprite, Collidable, Damageable, MonoBehavior, Rendera
 
     def reset_pos(self, x=WindowSettings.width // 2, y=WindowSettings.height // 2):
         self.rect.center = (x, y)
-
-    def try_move(self):
-        ##### Your Code Here ↓ #####
-        pass
-        ##### Your Code Here ↑ #####
 
     def update(self):
         self.handle_movement()
@@ -67,9 +65,9 @@ class Player(pygame.sprite.Sprite, Collidable, Damageable, MonoBehavior, Rendera
         if keys[pygame.K_d]:
             dx += 1
 
-        movement = Math.dot(Math.normalize((dx, dy)), self.speed)
+        velocity = Math.dot(Math.normalize((dx, dy)), self.speed)
 
-        self.rect.move_ip(movement[0], movement[1])
+        self.velocity = velocity
 
     def handle_fire(self):
         if self.fire_timer > 0:
@@ -110,4 +108,8 @@ class Player(pygame.sprite.Sprite, Collidable, Damageable, MonoBehavior, Rendera
                 self.handle_damage(stay.attack)
 
     def draw(self, window: pygame.Surface, dx=0, dy=0):
-        window.blit(self.image, self.rect)
+        # Calculate top-left corner of the picture separately
+        # because that of the rect has been changed when scaling
+        image_pos_x = self.rect.centerx - self.image.get_width() // 2
+        image_pos_y = self.rect.centery - self.image.get_height() // 2
+        window.blit(self.image, (image_pos_x, image_pos_y))

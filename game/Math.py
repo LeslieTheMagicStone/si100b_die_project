@@ -21,3 +21,27 @@ class Math:
     @classmethod
     def dot(cls, vector, scalar):
         return [x * scalar for x in vector]
+
+    @classmethod
+    def add(cls, vector1, vector2):
+        if len(vector1) != len(vector2):
+            raise ValueError(
+                f"addition of different len vectors: {len(vector1)} and {len(vector2)}"
+            )
+        return [vector1[i] + vector2[i] for i in range(len(vector1))]
+
+    @classmethod
+    def minus(cls, vector1, vector2):
+        if len(vector1) != len(vector2):
+            raise ValueError(
+                f"minus of different len vectors: {len(vector1)} and {len(vector2)}"
+            )
+        return [vector1[i] - vector2[i] for i in range(len(vector1))]
+
+    @classmethod
+    def distance(cls, vector1, vector2):
+        if len(vector1) != len(vector2):
+            raise ValueError(
+                f"distance of different len vectors: {len(vector1)} and {len(vector2)}"
+            )
+        return cls.norm(cls.minus(vector1, vector2))

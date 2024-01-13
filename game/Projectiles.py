@@ -1,10 +1,14 @@
 import pygame
 from Settings import *
+from Attributes import *
 
 
-class Projectile(pygame.sprite.Sprite):
-    def __init__(self) -> None:
-        super().__init__()
+class Projectile(pygame.sprite.Sprite, MonoBehavior, Renderable, Collidable):
+    def __init__(self, render_index=RenderIndex.projectile) -> None:
+        pygame.sprite.Sprite.__init__(self)
+        MonoBehavior.__init__(self)
+        Renderable.__init__(self, render_index=render_index)
+        Collidable.__init__(self)
 
         self.image = pygame.image.load(GamePath.bossTiles[0])
         self.image = pygame.transform.scale(

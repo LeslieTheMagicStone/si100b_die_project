@@ -24,6 +24,7 @@ class GameManager:
 
         # Initialize player
         self.player = Player(0, 0)
+        self.player.reset_pos()
 
         # Initialize scenes
         self.scenes: List[Scene] = []

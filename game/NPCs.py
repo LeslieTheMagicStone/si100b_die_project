@@ -11,7 +11,7 @@ class NPC(pygame.sprite.Sprite, Collidable, Renderable, MonoBehavior):
     def __init__(self, x, y, name, render_index=RenderIndex.npc):
         # Initialize father classes
         pygame.sprite.Sprite.__init__(self)
-        Collidable.__init__(self)
+        Collidable.__init__(self, is_rigid=True)
         Renderable.__init__(self, render_index)
         MonoBehavior.__init__(self)
 
@@ -79,7 +79,7 @@ class Monster(NPC):
         # Straightly moves towards the player
         dir = (self.player_rect.x - self.rect.x, self.player_rect.y - self.rect.y)
         movement = Math.round(Math.dot(Math.normalize(dir), self.speed))
-        self.rect.move_ip(movement[0], movement[1])
+        self.velocity = (movement[0], movement[1])
 
     def draw(self, window: pygame.Surface, dx=0, dy=0):
         window.blit(self.image, self.rect)

@@ -1,13 +1,15 @@
 from enum import Enum
 import pygame
 
+
 # MonoBehaviors have update() function
 class MonoBehavior:
     def update(self):
         raise NotImplementedError(f"The updated() method is not implemented in {self}")
 
+
 class Renderable:
-    def __init__(self, render_index, is_active = True) -> None:
+    def __init__(self, render_index, is_active=True) -> None:
         # Decides render sequence, object with smallest index renders first
         self.render_index = render_index
         # Decides if the object need to render
@@ -22,9 +24,13 @@ class Renderable:
 
 # Collidables will be counted in the update_collision() function in the Scene
 class Collidable:
-    def __init__(self, need_collision_list=False) -> None:
+    def __init__(self, need_collision_list=False, is_rigid=False) -> None:
         # All collidables should have rect
         self.rect: pygame.Rect = None
+        # With this enabled, it will act like block
+        self.is_rigid = is_rigid
+        # Used to detect upcoming collision
+        self.velocity = (0, 0)
         # With this enabled, the enter/stay/exit list will be updated once per frame
         self.need_collision_list = need_collision_list
         self.collisions_enter = []

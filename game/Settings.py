@@ -15,6 +15,7 @@ class SceneSettings:
     tileXnum = 48  # 64
     tileYnum = 27  # 36
     tileWidth = tileHeight = 40
+    obstacleDensity = 0.12
 
 
 class PlayerSettings:
@@ -179,6 +180,7 @@ class RenderIndex:
     npc = 4
     block = -1
     tileMap = -2
+    projectile = 3
 
 
 

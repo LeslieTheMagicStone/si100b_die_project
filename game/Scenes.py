@@ -33,6 +33,8 @@ class Scene:
         self._mono_behaviors: list[MonoBehavior] = []
         # List of all renderables
         self._renderables: list[Renderable] = []
+        # List of all portals
+        self._portals: list[Portal] = []
 
         # Initialize a global dialog box
         self.dialog_box = DialogBox()
@@ -52,6 +54,8 @@ class Scene:
         # Call update functions of mono behaviours
         for mb in self._mono_behaviors:
             mb.update()
+        # Update movement of collidables with velocity
+        self.update_velocity_movement()
 
     # Update the collision list of the collidables needing it
     def update_collision_list(self):
@@ -82,6 +86,37 @@ class Scene:
                     if other not in collidable.collisions_stay:
                         collidable.collisions_enter.append(other)
 
+    # Update the movement of the collidables with velocity,
+    # avoiding collisions between rigid ones
+    # TODO integrate it to updatecollision() to still enter collision list
+    # TODO while avoiding real collision
+    def update_velocity_movement(self):
+        for c in self._collidables:
+            # Only need to update collidables with velocity
+            if c.velocity == (0, 0):
+                continue
+
+            dx = c.velocity[0]
+            dy = c.velocity[1]
+
+            target_pos_x = c.rect.move(dx, 0)
+            target_pos_y = c.rect.move(0, dy)
+
+            # Only need to detect collisions between rigid collidables
+            if c.is_rigid:
+                for other in self._collidables:
+                    if other is not c and other.is_rigid:
+                        # Avoid x and y movement separately
+                        # to get smoother movement
+                        if other.rect.colliderect(target_pos_x):
+                            dx = 0
+
+                        if other.rect.colliderect(target_pos_y):
+                            dy = 0
+
+            # Finally, update movement based on velocity
+            c.rect.move_ip(dx, dy)
+
     # Append object to scene object list
     def append_object(self, obj):
         self._objects.append(obj)
@@ -92,7 +127,8 @@ class Scene:
             self._mono_behaviors.append(obj)
         if isinstance(obj, Renderable):
             self._renderables.append(obj)
-
+        if isinstance(obj, Portal):
+            self._portals.append(obj)
 
     # Sort renderables from the lowest index to the highest
     def sort_renderables(self):
@@ -149,11 +185,17 @@ class SafeRoomScene(Scene):
         super().__init__(data)
 
         # Init tile map
-        map_obj = Maps.gen_safety_room_map()
-        self.tile_map = generator.generate(TileMap(map_obj), self)
+        tile_map = Maps.gen_safe_room_map()
+        self.tile_map = generator.generate(tile_map, scene=self)
 
         # Init portals
-        generator.generate(Portal(123, 123, "Mob Room"), self)
+        generator.generate(Portal(123, 123, "Mob Room"), scene=self)
+
+        # Init obstacles
+        rects_to_avoid = [portal.rect for portal in self._portals] + [self.player.rect]
+        self.obstacles = Maps.gen_safe_room_obstacles(rects_to_avoid)
+        for obstacle in self.obstacles:
+            generator.generate(obstacle, scene=self)
 
     def start(self):
         self.player.reset_pos()
@@ -172,7 +214,7 @@ class MobRoomScene(Scene):
 
         # Init monsters
         monster = Monster(self.player.rect, 10, 10)
-        generator.generate(monster, self)
+        generator.generate(monster, scene=self)
 
     def start(self):
         self.player.reset_pos()
