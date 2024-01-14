@@ -4,28 +4,31 @@ from Settings import *
 from Math import *
 from Attributes import *
 
+
 class Projectile(pygame.sprite.Sprite, MonoBehavior, Renderable, Collidable):
-    def __init__(self, render_index=RenderIndex.projectile) -> None:
+    def __init__(self, x, y, render_index=RenderIndex.projectile) -> None:
         pygame.sprite.Sprite.__init__(self)
         MonoBehavior.__init__(self)
         Renderable.__init__(self, render_index=render_index)
         Collidable.__init__(self)
 
-        self.image = pygame.image.load(GamePath.bossTiles[0])
+        self.image = pygame.image.load(GamePath.player[0])
         self.image = pygame.transform.scale(
-            self.image, (SceneSettings.tileWidth / 4, SceneSettings.tileHeight / 4)
+            self.image, (SceneSettings.tileWidth // 4, SceneSettings.tileHeight / 4)
         )
         self.rect = self.image.get_rect()
+        self.rect.center = (x, y)
 
     def draw(self, window: pygame.Surface):
         window.blit(self.image, self.rect)
 
 
 class Bullet(Projectile):
-    def __init__(self, velocity) -> None:
-        super().__init__()
+    def __init__(self, x, y, velocity, damage=ProjectileSettings.bulletDamage) -> None:
+        super().__init__(x, y)
 
         self.velocity = velocity
+        self.damage = damage
 
     def update(self):
         self.rect.move_ip(self.velocity[0], self.velocity[1])
@@ -68,5 +71,9 @@ class Laser(Projectile):
 
         self.velocity = velocity
 
-    def update(self):
-        self.rect.move_ip(self.velocity[0], self.velocity[1])
+
+class tantanle(Projectile):
+    def __init__(self, velocity) -> None:
+        super().__init__()
+
+        self.velocity = velocity

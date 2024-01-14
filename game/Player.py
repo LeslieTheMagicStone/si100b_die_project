@@ -48,6 +48,7 @@ class Player(pygame.sprite.Sprite, Collidable, Damageable, MonoBehavior, Rendera
         self.rect.center = (x, y)
 
     def update(self):
+        self.handle_fire()
         self.handle_movement()
         self.handle_collisions()
 
@@ -78,19 +79,29 @@ class Player(pygame.sprite.Sprite, Collidable, Damageable, MonoBehavior, Rendera
 
         dx = dy = 0
 
-        if keys[pygame.K_w]:
+        if keys[pygame.K_UP]:
             dy -= 1
-        if keys[pygame.K_s]:
+        if keys[pygame.K_DOWN]:
             dy += 1
-        if keys[pygame.K_a]:
+        if keys[pygame.K_LEFT]:
             dx -= 1
-        if keys[pygame.K_d]:
+        if keys[pygame.K_RIGHT]:
             dx += 1
 
-        velocity = Math.dot(Math.normalize((dx, dy)), ProjectileSettings.bulletSpeed)
-        bullet = generator.generate(Bullet, velocity)
+        if (dx, dy) != (0, 0):
+            bullet_velocity = Math.dot(
+                Math.normalize((dx, dy)), ProjectileSettings.bulletSpeed
+            )
+            bullet = generator.generate(
+                Bullet(self.rect.centerx, self.rect.centery, bullet_velocity)
+            )
+
+            self.fire_timer = self.fire_cd
 
     def handle_damage(self, damage):
+        if self.is_invulnerable:
+            return
+
         damage = max(0, damage - self.defence)
         self.hp = max(0, self.hp - damage)
         EventSystem.fire_hurt_event(damage)

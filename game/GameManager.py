@@ -33,7 +33,7 @@ class GameManager:
         self.scenes.append(MobRoomScene(self.pack_scene_transfer_data("Mob Room")))
 
         # Default scene is main menu
-        self.flush_scene("Main Menu")
+        self.flush_scene("Mob Room")
 
     def game_reset(self):
         # TODO reset the scenes
@@ -102,6 +102,13 @@ class GameManager:
                 scene.append_object(event.message[0])
             elif event.type == GameEvent.EVENT_DIALOG:
                 self.scene.show_dialog_box(event.message)
+            elif event.type == GameEvent.EVENT_DESTROY:
+                # Append object to the scene object list
+                scene = event.message[1]
+                # Default Scene is current scene
+                if scene is None:
+                    scene = self.scene
+                scene.remove_object(event.message[0])
 
     # Collision-relate update funtions here ↓
     def update_collide(self):

@@ -173,6 +173,13 @@ class PortalSettings:
     coordX = (SceneSettings.tileXnum - 10) * SceneSettings.tileWidth - width / 2
     coordY = (SceneSettings.tileYnum / 2) * SceneSettings.tileHeight - height / 2
 
+
+class HealthBarSettings:
+    width = 60
+    height = 10
+    dy = 10
+
+
 class RenderIndex:
     portal = 0
     player = 1
@@ -181,11 +188,12 @@ class RenderIndex:
     block = -1
     tileMap = -2
     projectile = 3
-
+    ui = 10
 
 
 class ProjectileSettings:
     bulletSpeed = 10
+    bulletDamage = 2
 
 
 class GameState(Enum):
@@ -200,9 +208,16 @@ class GameState(Enum):
 class GameEvent:
     EVENT_BATTLE = pygame.USEREVENT + 1
     EVENT_DIALOG = pygame.USEREVENT + 2
+    # Go to another scene
     EVENT_SWITCH = pygame.USEREVENT + 3
+    # Restart the game
     EVENT_RESTART = pygame.USEREVENT + 4
     EVENT_SHOP = pygame.USEREVENT + 5
+    # Player gets hurt
     EVENT_HURT = pygame.USEREVENT + 6
+    # Append object to scene._objects
     EVENT_GENERATE = pygame.USEREVENT + 7
-
+    # Enemy gets hurt
+    EVENT_HIT = pygame.USEREVENT + 8
+    # Remove object from scene._objects
+    EVENT_DESTROY = pygame.USEREVENT + 9

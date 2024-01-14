@@ -1,10 +1,14 @@
 # -*- coding:utf-8 -*-
 
 import pygame
+import generator
 
 from Settings import *
 from Attributes import *
 from Math import *
+from EventSystem import *
+from Projectiles import *
+from UI import *
 
 
 class NPC(pygame.sprite.Sprite, Collidable, Renderable, MonoBehavior):
@@ -46,7 +50,7 @@ class DialogNPC(NPC):
         self.player_rect = player_rect
 
 
-class Monster(NPC):
+class Monster(NPC, Damageable):
     def __init__(
         self,
         player_rect: pygame.Rect,
@@ -58,7 +62,11 @@ class Monster(NPC):
         defence=1,
         money=15,
     ):
-        super().__init__(x, y, name="Monster", render_index=RenderIndex.monster)
+        NPC.__init__(self, x, y, name="Monster", render_index=RenderIndex.monster)
+        Damageable.__init__(self)
+
+        # Need collision list to detect hurt
+        self.need_collision_list = True
         # Image and rect related
         self.image = pygame.image.load(GamePath.monster)
         self.image = pygame.transform.scale(
@@ -70,16 +78,60 @@ class Monster(NPC):
         self.player_rect = player_rect
         # Attribute related
         self.speed = speed
-        self.hp = hp
+        self.max_hp = hp
         self.attack = attack
         self.defence = defence
         self.money = money
+        # Combat related
+        self.is_dead = False
+        self.cur_hp = self.max_hp
+
+    def start(self):
+        # Init health bar
+        self.health_bar = HealthBar(self, self.rect)
+        generator.generate(self.health_bar)
 
     def update(self):
+        if self.is_dead:
+            return
+
+        self.handle_movement()
+        self.handle_collisions()
+
+    def handle_movement(self):
         # Straightly moves towards the player
         dir = (self.player_rect.x - self.rect.x, self.player_rect.y - self.rect.y)
         movement = Math.round(Math.dot(Math.normalize(dir), self.speed))
         self.velocity = (movement[0], movement[1])
+
+    def handle_damage(self, damage):
+        if self.is_invulnerable:
+            return
+
+        damage = max(0, damage - self.defence)
+        self.cur_hp = max(0, self.cur_hp - damage)
+
+        EventSystem.fire_hit_event(damage, self.rect.center)
+
+        if self.cur_hp == 0:
+            self.handle_death()
+
+    def handle_death(self):
+        EventSystem.fire_destroy_event(self.health_bar)
+        EventSystem.fire_destroy_event(self)
+
+    def handle_collisions(self):
+        # DEBUG: for collision list test
+        # if len(self.collisions_enter) != 0:
+        #     print("enter", self.collisions_enter)
+        # if len(self.collisions_stay) != 0:
+        #     print("stay", self.collisions_stay)
+        # if len(self.collisions_exit) != 0:
+        #     print("exit", self.collisions_exit)
+        for enter in self.collisions_enter:
+            if isinstance(enter, Projectile):
+                if isinstance(enter, Bullet):
+                    self.handle_damage(enter.damage)
 
     def draw(self, window: pygame.Surface, dx=0, dy=0):
         window.blit(self.image, self.rect)

@@ -4,6 +4,13 @@ import pygame
 
 # MonoBehaviors have update() function
 class MonoBehavior:
+    def __init__(self):
+        self.start_called = False
+
+    # Start function called the first frame after initialization
+    def start(self):
+        pass
+
     def update(self):
         raise NotImplementedError(f"The updated() method is not implemented in {self}")
 
@@ -41,7 +48,10 @@ class Collidable:
 class Damageable:
     def __init__(self) -> None:
         # All Damageables should have hp
-        self.hp = 0
+        self.cur_hp = 0
+        self.max_hp = 0
+        # If is invulnerable, it will not take any damage
+        self.is_invulnerable = False
 
     def handle_damage(self) -> None:
-        pass
+        raise NotImplementedError(f"The handle_damge() method is not implemented in {self}")

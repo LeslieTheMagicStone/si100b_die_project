@@ -18,6 +18,7 @@ from EventSystem import *
 from Math import *
 from Projectiles import *
 from Maps import *
+from UI import *
 
 
 class Scene:
@@ -51,40 +52,48 @@ class Scene:
     def update(self):
         # Update collision lists of the collidables
         self.update_collision_list()
-        # Call update functions of mono behaviours
+        # Call start/update functions of mono behaviours
         for mb in self._mono_behaviors:
-            mb.update()
+            if not mb.start_called:
+                mb.start()
+                mb.start_called = True
+            else:
+                mb.update()
         # Update movement of collidables with velocity
         self.update_velocity_movement()
 
     # Update the collision list of the collidables needing it
     def update_collision_list(self):
-        for collidable in self._collidables:
+        for c in self._collidables:
             # Only need to update those collidables which need collision list
-            if not collidable.need_collision_list:
+            if not c.need_collision_list:
                 continue
 
             # Clear all objects in exit list
-            collidable.collisions_exit = []
+            c.collisions_exit = []
 
             # Update stay list (of last frame)
-            for other in collidable.collisions_stay:
-                if not collidable.rect.colliderect(other):
-                    collidable.collisions_stay.remove(other)
-                    collidable.collisions_exit.append(other)
+            for other in c.collisions_stay:
+                if not c.rect.colliderect(other):
+                    c.collisions_stay.remove(other)
+                    c.collisions_exit.append(other)
 
             # Update enter list (of last frame)
-            for other in collidable.collisions_enter:
-                collidable.collisions_enter.remove(other)
-                if collidable.rect.colliderect(other):
-                    collidable.collisions_stay.append(other)
+            for other in c.collisions_enter:
+                c.collisions_enter.remove(other)
+                if c.rect.colliderect(other):
+                    c.collisions_stay.append(other)
                 else:
-                    collidable.collisions_exit.append(other)
+                    c.collisions_exit.append(other)
             # Check new collision enters (of this frame)
             for other in self._collidables:
-                if other.rect.colliderect(collidable.rect):
-                    if other not in collidable.collisions_stay:
-                        collidable.collisions_enter.append(other)
+                # Of course collision of itself does not count
+                if other is c:
+                    continue
+
+                if other.rect.colliderect(c.rect):
+                    if other not in c.collisions_stay:
+                        c.collisions_enter.append(other)
 
     # Update the movement of the collidables with velocity,
     # avoiding collisions between rigid ones
@@ -129,6 +138,20 @@ class Scene:
             self._renderables.append(obj)
         if isinstance(obj, Portal):
             self._portals.append(obj)
+
+    # Remove object from scene object list
+    def remove_object(self, obj):
+        self._objects.remove(obj)
+
+        if isinstance(obj, Collidable):
+            self._collidables.remove(obj)
+        if isinstance(obj, MonoBehavior):
+            self._mono_behaviors.remove(obj)
+        if isinstance(obj, Renderable):
+            self._renderables.remove(obj)
+        if isinstance(obj, Portal):
+            self._portals.remove(obj)
+
 
     # Sort renderables from the lowest index to the highest
     def sort_renderables(self):
@@ -212,6 +235,10 @@ class MobRoomScene(Scene):
     def __init__(self, data: SceneTransferData):
         super().__init__(data)
 
+        # Init tile map
+        tile_map = Maps.gen_mob_room_map()
+        self.tile_map = generator.generate(tile_map, scene=self)
+
         # Init monsters
         monster = Monster(self.player.rect, 10, 10)
         generator.generate(monster, scene=self)
@@ -221,6 +248,12 @@ class MobRoomScene(Scene):
 
     def update(self):
         super().update()
+
+        # for item in self._objects:
+        #     if isinstance(item, HealthBar):
+        #         print("yes")
+        #     if isinstance(item, Monster):
+        #         print(item.cur_hp)
 
     def render(self):
         # Render background with black

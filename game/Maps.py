@@ -79,10 +79,23 @@ def gen_safe_room_map() -> TileMap:
     return TileMap(map_obj)
 
 
-def gen_city_map():
-    ##### Your Code Here ↓ #####
-    pass
-    ##### Your Code Here ↑ #####
+def gen_mob_room_map():
+    tile_images = [pygame.image.load(tile) for tile in GamePath.bossTiles]
+    tile_width = SceneSettings.tileWidth
+    tile_height = SceneSettings.tileHeight
+    tile_images = [
+        pygame.transform.scale(image, (tile_width, tile_height))
+        for image in tile_images
+    ]
+
+    map_obj = []
+    for i in range(SceneSettings.tileXnum):
+        column = []
+        for j in range(SceneSettings.tileYnum):
+            column.append(tile_images[randint(0, len(tile_images) - 1)])
+        map_obj.append(column)
+
+    return TileMap(map_obj)
 
 
 def gen_boss_map():
@@ -101,9 +114,6 @@ def gen_safe_room_obstacles(rects_to_avoid: list[pygame.Rect]) -> list[pygame.Su
     # Obstacle will not generate around the rects to avoid
     # within the radius
     null_radius = 100
-
-    for item in rects_to_avoid:
-        print(item.center)
 
     for i in range(SceneSettings.tileXnum):
         for j in range(SceneSettings.tileYnum):
