@@ -24,11 +24,18 @@ class Player(pygame.sprite.Sprite, Collidable, Damageable, MonoBehavior, Rendera
         MonoBehavior.__init__(self)
         Renderable.__init__(self, render_index=RenderIndex.player)
 
-        # Image related
-        self.image = pygame.image.load(GamePath.player[0])
-        self.image = pygame.transform.scale(
-            self.image, (PlayerSettings.width, PlayerSettings.height)
-        )
+        # Animation related
+        self.images = [
+            pygame.transform.scale(
+                pygame.image.load(path), (PlayerSettings.width, PlayerSettings.height)
+            )
+            for path in GamePath.player
+        ]
+        self.anim_interval_second = PlayerSettings.animIntervalSecond
+        self.anim_frame = 0
+        self.image = self.images[0]
+        self.anim_timer = 0
+
         self.rect = self.image.get_rect()
         self.rect.center = (x, y)
         # Scale the rect by 0.5x to make collision trigger more realistic
@@ -51,6 +58,21 @@ class Player(pygame.sprite.Sprite, Collidable, Damageable, MonoBehavior, Rendera
         self.handle_fire()
         self.handle_movement()
         self.handle_collisions()
+        self.handle_animation()
+
+    def handle_animation(self):
+        # Only need to play run animation when running
+        if self.velocity == (0, 0):
+            self.image = self.images[2]
+            return
+
+        if self.anim_timer < 0:
+            self.anim_timer = self.anim_interval_second
+            self.anim_frame += 1
+            self.anim_frame = min(self.anim_frame, self.anim_frame % len(self.images))
+            self.image = self.images[self.anim_frame]
+
+        self.anim_timer -= Time.delta_time
 
     def handle_movement(self):
         keys = pygame.key.get_pressed()

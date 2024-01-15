@@ -27,6 +27,7 @@ class PlayerSettings:
     attack = 5
     defence = 1
     money = 100
+    animIntervalSecond = 0.1
 
 
 class NPCSettings:
@@ -117,12 +118,8 @@ class GamePath:
     npc = r".\assets\npc\npc.png"
     player = [
         r".\assets\player\1.png",
-        r".\assets\player\1.png",
-        r".\assets\player\2.png",
         r".\assets\player\2.png",
         r".\assets\player\3.png",
-        r".\assets\player\3.png",
-        r".\assets\player\4.png",
         r".\assets\player\4.png",
         # 8 frames for a single loop of animation looks much better.
     ]

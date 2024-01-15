@@ -1,5 +1,12 @@
 class Math:
     @classmethod
+    def same_type_with_input(cls, value, input):
+        if isinstance(input, list):
+            return list(value)
+        elif isinstance(input, tuple):
+            return tuple(value)
+
+    @classmethod
     def norm(cls, vector):
         norm = 0
         for x in vector:
@@ -12,15 +19,18 @@ class Math:
         norm = Math.norm(vector)
         if norm == 0:
             return vector
-        return [x / norm for x in vector]
+        ans = [x / norm for x in vector]
+        return Math.same_type_with_input(ans, vector)
 
     @classmethod
     def round(cls, vector):
-        return [round(x) for x in vector]
+        ans = [round(x) for x in vector]
+        return Math.same_type_with_input(ans, vector)
 
     @classmethod
     def dot(cls, vector, scalar):
-        return [x * scalar for x in vector]
+        ans = [x * scalar for x in vector]
+        return Math.same_type_with_input(ans, vector)
 
     @classmethod
     def add(cls, vector1, vector2):
@@ -28,7 +38,8 @@ class Math:
             raise ValueError(
                 f"addition of different len vectors: {len(vector1)} and {len(vector2)}"
             )
-        return [vector1[i] + vector2[i] for i in range(len(vector1))]
+        ans = [vector1[i] + vector2[i] for i in range(len(vector1))]
+        return Math.same_type_with_input(ans, vector1)
 
     @classmethod
     def minus(cls, vector1, vector2):
@@ -36,7 +47,8 @@ class Math:
             raise ValueError(
                 f"minus of different len vectors: {len(vector1)} and {len(vector2)}"
             )
-        return [vector1[i] - vector2[i] for i in range(len(vector1))]
+        ans = [vector1[i] - vector2[i] for i in range(len(vector1))]
+        return Math.same_type_with_input(ans, vector1)
 
     @classmethod
     def distance(cls, vector1, vector2):
