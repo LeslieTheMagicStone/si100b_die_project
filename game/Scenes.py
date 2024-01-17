@@ -60,11 +60,11 @@ class Scene:
 
     # Update function called once per frame
     def update(self):
-        # Update collision lists of the collidables
-        self.update_collision_list()
-
         # Call start/update functions of mono behaviours
         self.update_mono_behaviors()
+
+        # Update collision lists of the collidables
+        self.update_collision_list()
 
         # Update movement of collidables with velocity
         self.update_velocity_movement()
@@ -78,6 +78,10 @@ class Scene:
             # Only need to update those collidables which need collision list
             if not c.need_collision_list:
                 continue
+
+            # Assume they all move without bumping into others
+            (dx, dy) = c.velocity
+            c.rect.move_ip(dx, dy)
 
             # Clear all objects in exit list
             c.collisions_exit = []
@@ -105,6 +109,9 @@ class Scene:
                     if other not in c.collisions_stay:
                         c.collisions_enter.append(other)
 
+            # Don't forget to set the position back to original
+            c.rect.move_ip(-dx, -dy)
+
     # Call start/update functions of mono behaviours
     def update_mono_behaviors(self):
         for mb in self._mono_behaviors:
@@ -116,8 +123,6 @@ class Scene:
 
     # Update the movement of the collidables with velocity,
     # avoiding collisions between rigid ones
-    # TODO integrate it to updatecollision() to still enter collision list
-    # TODO while avoiding real collision
     def update_velocity_movement(self):
         for c in self._collidables:
             # Only need to update collidables with velocity
@@ -284,7 +289,6 @@ class MobRoomScene(Scene):
         ]
         for b in self.boundaries:
             generator.generate(b, scene=self)
-
 
     def start(self):
         super().start()

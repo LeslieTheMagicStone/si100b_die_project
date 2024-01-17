@@ -122,13 +122,12 @@ class Monster(NPC, Damageable):
         EventSystem.fire_destroy_event(self)
 
     def handle_collisions(self):
-        # DEBUG: for collision list test
-        # if len(self.collisions_enter) != 0:
-        #     print("enter", self.collisions_enter)
-        # if len(self.collisions_stay) != 0:
-        #     print("stay", self.collisions_stay)
-        # if len(self.collisions_exit) != 0:
-        #     print("exit", self.collisions_exit)
+        if len(self.collisions_enter) != 0:
+            print("enter", self.collisions_enter, self.velocity)
+        if len(self.collisions_stay) != 0:
+            print("stay", self.collisions_stay, self.velocity)
+        if len(self.collisions_exit) != 0:
+            print("exit", self.collisions_exit, self.velocity)
         for enter in self.collisions_enter:
             if isinstance(enter, Projectile):
                 if isinstance(enter, Bullet):

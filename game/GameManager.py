@@ -112,7 +112,9 @@ class GameManager:
                 scene.remove_object(event.message[0])
             elif event.type == GameEvent.EVENT_HIT:
                 # Generate smoke animation
+                damage = event.message[0]
                 position = event.message[1]
+                EffectManager.generate(f"text: {damage}", position[0], position[1])
                 EffectManager.generate("smoke", position[0], position[1])
 
     def pack_scene_transfer_data(self, name) -> SceneTransferData:

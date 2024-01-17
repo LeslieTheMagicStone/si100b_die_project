@@ -7,14 +7,28 @@ from EventSystem import *
 
 
 class Effect(pygame.sprite.Sprite, Renderable):
-    def __init__(self, paths, x, y, width, height, looping=False, tpf=1) -> None:
+    def __init__(
+        self,
+        images: list[str] | list[pygame.Surface],
+        x,
+        y,
+        width,
+        height,
+        looping=False,
+        tpf=1,
+    ) -> None:
         pygame.sprite.Sprite.__init__(self)
         Renderable.__init__(self, render_index=RenderIndex.effect)
 
-        self.images = [
-            pygame.transform.scale(pygame.image.load(path), (width, height))
-            for path in paths
-        ]
+        # If the images argument is the paths of images, load them first
+        if isinstance(images[0], str):
+            self.images = [
+                pygame.transform.scale(pygame.image.load(path), (width, height))
+                for path in images
+            ]
+        else:
+            self.images = images
+
         self.image = self.images[0]
         self.rect = self.image.get_rect()
         self.rect.center = (x, y)
@@ -47,13 +61,26 @@ class Effect(pygame.sprite.Sprite, Renderable):
 
 class EffectManager:
     @classmethod
-    def generate(cls, effect_name, x, y):
-        if effect_name == "smoke":
+    def generate(cls, effect_name: str, x, y):
+        if effect_name.startswith("text: "):
+            text = effect_name.removeprefix("text: ")
+            generator.generate(TextEffect(x, y, text))
+        elif effect_name == "smoke":
             generator.generate(SmokeEffect(x, y))
         elif effect_name == "teleport":
             generator.generate(TeleportEffect(x, y))
         else:
             raise ValueError(f"no effect named {effect_name}")
+
+
+class TextEffect(Effect):
+    def __init__(
+        self, x, y, text, size=36, color=(255, 255, 255), duration_ticks=30
+    ) -> None:
+        font = pygame.font.Font(None, size)
+        image = font.render(text, True, color)
+
+        super().__init__([image], x, y, size, size, looping=False, tpf=duration_ticks)
 
 
 class SmokeEffect(Effect):
