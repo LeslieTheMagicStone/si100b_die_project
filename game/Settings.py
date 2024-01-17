@@ -146,6 +146,15 @@ class GamePath:
 
     cityWall = r".\assets\tiles\cityWall.png"
 
+    snowTiles = [
+        r".\assets\tiles\snow1.png",
+        r".\assets\tiles\snow2.png",
+        r".\assets\tiles\snow3.png",
+        r".\assets\tiles\snow4.png",
+        r".\assets\tiles\snow5.png",
+        r".\assets\tiles\snow6.png",
+    ]
+
     bossTiles = [
         r".\assets\tiles\boss1.png",
         r".\assets\tiles\boss2.png",
@@ -162,6 +171,25 @@ class GamePath:
     tree = r".\assets\tiles\tree.png"
 
     bgm = [r".\assets\bgm\city.mp3", r".\assets\bgm\wild.mp3", r".\assets\bgm\boss.mp3"]
+
+    smoke = [
+        r".\assets\effects\Smoke\FX001\FX001_01.png",
+        r".\assets\effects\Smoke\FX001\FX001_02.png",
+        r".\assets\effects\Smoke\FX001\FX001_03.png",
+        r".\assets\effects\Smoke\FX001\FX001_04.png",
+        r".\assets\effects\Smoke\FX001\FX001_05.png",
+    ]
+
+    teleport = [
+        r".\assets\effects\Smoke\FX002\FX002_01.png",
+        r".\assets\effects\Smoke\FX002\FX002_02.png",
+        r".\assets\effects\Smoke\FX002\FX002_03.png",
+        r".\assets\effects\Smoke\FX002\FX002_04.png",
+        r".\assets\effects\Smoke\FX002\FX002_05.png",
+        r".\assets\effects\Smoke\FX002\FX002_06.png",
+        r".\assets\effects\Smoke\FX002\FX002_07.png",
+        r".\assets\effects\Smoke\FX002\FX002_08.png",
+    ]
 
 
 class PortalSettings:
@@ -186,6 +214,7 @@ class RenderIndex:
     tileMap = -2
     projectile = 3
     ui = 10
+    effect = 9
 
 
 class ProjectileSettings:

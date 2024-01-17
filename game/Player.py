@@ -13,6 +13,7 @@ from Math import *
 from NPCs import *
 from globals import *
 from Projectiles import *
+from UI import *
 
 
 class Player(pygame.sprite.Sprite, Collidable, Damageable, MonoBehavior, Renderable):
@@ -44,9 +45,11 @@ class Player(pygame.sprite.Sprite, Collidable, Damageable, MonoBehavior, Rendera
         # Attribute related
         self.speed = PlayerSettings.speed
         self.coins = 0
-        self.hp = PlayerSettings.hp
         self.attack = PlayerSettings.attack
         self.defence = PlayerSettings.defence
+        # Combat related
+        self.max_hp = PlayerSettings.hp
+        self.cur_hp = self.max_hp
         # Fire related
         self.fire_cd = 0.5
         self.fire_timer = 0
@@ -88,7 +91,7 @@ class Player(pygame.sprite.Sprite, Collidable, Damageable, MonoBehavior, Rendera
         if keys[pygame.K_d]:
             dx += 1
 
-        velocity = Math.dot(Math.normalize((dx, dy)), self.speed)
+        velocity = Math.scale(Math.normalize((dx, dy)), self.speed)
 
         self.velocity = velocity
 
@@ -111,7 +114,7 @@ class Player(pygame.sprite.Sprite, Collidable, Damageable, MonoBehavior, Rendera
             dx += 1
 
         if (dx, dy) != (0, 0):
-            bullet_velocity = Math.dot(
+            bullet_velocity = Math.scale(
                 Math.normalize((dx, dy)), ProjectileSettings.bulletSpeed
             )
             bullet = generator.generate(
@@ -122,27 +125,30 @@ class Player(pygame.sprite.Sprite, Collidable, Damageable, MonoBehavior, Rendera
 
     def handle_damage(self, damage):
         if self.is_invulnerable:
-            return
+            return 0
 
         damage = max(0, damage - self.defence)
-        self.hp = max(0, self.hp - damage)
+        self.cur_hp = max(0, self.cur_hp - damage)
         EventSystem.fire_hurt_event(damage)
+
+        return damage
 
     def handle_collisions(self):
         for enter in self.collisions_enter:
             if isinstance(enter, Portal):
-                EventSystem.fire_switch_event(enter.GOTO)
+                if enter.GOTO != SceneManager.current_scene:
+                    EventSystem.fire_switch_event(enter.GOTO)
             if isinstance(enter, DialogNPC):
                 EventSystem.fire_dialog_event("接触DialogNPC之后Event")
-            """接触DialogNPC之后Event"""
 
         for stay in self.collisions_stay:
             if isinstance(stay, Monster):
-                self.handle_damage(stay.attack)
+                damage = self.handle_damage(stay.attack)
+                EventSystem.fire_hurt_event(damage)
 
     def draw(self, window: pygame.Surface, dx=0, dy=0):
         # Calculate top-left corner of the picture separately
         # because that of the rect has been changed when scaling
-        image_pos_x = self.rect.centerx - self.image.get_width() // 2
+        image_pos_x = self.rect.centerx - self.image.get_width() // 2 - 8 # tiny offset to look more realistic
         image_pos_y = self.rect.centery - self.image.get_height() // 2
-        window.blit(self.image, (image_pos_x, image_pos_y))
+        window.blit(self.image, (image_pos_x + dx, image_pos_y + dy))

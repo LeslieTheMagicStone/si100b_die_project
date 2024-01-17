@@ -6,8 +6,8 @@ import pygame
 from Player import Player
 from Scenes import *
 from Settings import *
-from PopUpBox import *
 from SceneTransferData import *
+from Effects import EffectManager
 
 
 class GameManager:
@@ -33,7 +33,7 @@ class GameManager:
         self.scenes.append(MobRoomScene(self.pack_scene_transfer_data("Mob Room")))
 
         # Default scene is main menu
-        self.flush_scene("Mob Room")
+        self.flush_scene("Main Menu")
 
     def game_reset(self):
         # TODO reset the scenes
@@ -60,6 +60,7 @@ class GameManager:
                 self.scene.start()
                 self.game_state = GameState.GAME_PLAY
                 pygame.display.set_caption(f"{WindowSettings.name} - {self.scene.name}")
+                SceneManager.current_scene = self.scene.name
             else:
                 raise IndexError(f"Scene index: {GOTO} out of range")
 
@@ -109,35 +110,10 @@ class GameManager:
                 if scene is None:
                     scene = self.scene
                 scene.remove_object(event.message[0])
-
-    # Collision-relate update funtions here ↓
-    def update_collide(self):
-        # Player -> Obstacles
-        ##### Your Code Here ↓ #####
-        pass
-        ##### Your Code Here ↑ #####
-
-        # Player -> NPCs; if multiple NPCs collided, only first is accepted and dealt with.
-        ##### Your Code Here ↓ #####
-        pass
-        ##### Your Code Here ↑ #####
-
-        # Player -> Monsters
-        ##### Your Code Here ↓ #####
-        pass
-        ##### Your Code Here ↑ #####
-
-        # Player -> Portals
-        ##### Your Code Here ↓ #####
-        pass
-        ##### Your Code Here ↑ #####
-
-        # Player -> Boss
-        ##### Your Code Here ↓ #####
-        pass
-        ##### Your Code Here ↑ #####
-
-    """ Rendering-related update functions """
+            elif event.type == GameEvent.EVENT_HIT:
+                # Generate smoke animation
+                position = event.message[1]
+                EffectManager.generate("smoke", position[0], position[1])
 
     def pack_scene_transfer_data(self, name) -> SceneTransferData:
         return SceneTransferData(player=self.player, window=self.window, name=name)

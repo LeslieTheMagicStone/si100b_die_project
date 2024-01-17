@@ -19,8 +19,8 @@ class Projectile(pygame.sprite.Sprite, MonoBehavior, Renderable, Collidable):
         self.rect = self.image.get_rect()
         self.rect.center = (x, y)
 
-    def draw(self, window: pygame.Surface):
-        window.blit(self.image, self.rect)
+    def draw(self, window: pygame.Surface, dx=0, dy=0):
+        window.blit(self.image, self.rect.move(dx, dy))
 
 
 class Bullet(Projectile):
@@ -29,10 +29,6 @@ class Bullet(Projectile):
 
         self.velocity = velocity
         self.damage = damage
-
-    def update(self):
-        self.rect.move_ip(self.velocity[0], self.velocity[1])
-
 
 """此处NPC可以是monster也可以是player,当player发出时,锁定最近的敌人。(计划书中没有player发出的情况,有时间再添加)"""
 
@@ -46,7 +42,7 @@ class Tracking_bullet(Projectile):
 
     def update(self) -> None:
         dir = (self.player_rect.x - self.rect.x, self.player_rect.y - self.rect.y)
-        movement = Math.round(Math.dot(Math.normalize(dir), self.speed))
+        movement = Math.round(Math.scale(Math.normalize(dir), self.speed))
         self.rect.move_ip(movement[0], movement[1])
 
 

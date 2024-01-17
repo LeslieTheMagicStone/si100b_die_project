@@ -28,7 +28,7 @@ class Math:
         return Math.same_type_with_input(ans, vector)
 
     @classmethod
-    def dot(cls, vector, scalar):
+    def scale(cls, vector, scalar):
         ans = [x * scalar for x in vector]
         return Math.same_type_with_input(ans, vector)
 
@@ -57,3 +57,16 @@ class Math:
                 f"distance of different len vectors: {len(vector1)} and {len(vector2)}"
             )
         return cls.norm(cls.minus(vector1, vector2))
+
+    @classmethod
+    def orthogonal(cls, vector):
+        if len(vector) != 2:
+            raise ValueError(f"only support 2d orthogonal")
+
+        ans = [vector[1], -vector[0]]
+        return Math.same_type_with_input(ans, vector)
+    
+    @classmethod
+    def ortho_normal(cls, vector):
+        ans = Math.normalize(Math.orthogonal(vector))
+        return Math.same_type_with_input(ans, vector)

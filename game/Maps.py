@@ -28,8 +28,8 @@ class Block(pygame.sprite.Sprite, Renderable, Collidable):
         self.rect = self.image.get_rect()
         self.rect.center = (x, y)
 
-    def draw(self, window: pygame.Surface):
-        window.blit(self.image, self.rect)
+    def draw(self, window: pygame.Surface, dx=0, dy=0):
+        window.blit(self.image, self.rect.move(dx, dy))
 
 
 class TileMap(Renderable):
@@ -47,7 +47,7 @@ class TileMap(Renderable):
         self.tile_width = tile_width
         self.tile_height = tile_height
 
-    def draw(self, window):
+    def draw(self, window: pygame.Surface, dx=0, dy=0):
         if not self.is_active:
             return
 
@@ -55,13 +55,13 @@ class TileMap(Renderable):
             for j in range(len(self.map[i])):
                 window.blit(
                     self.map[i][j],
-                    (self.tile_width * i, self.tile_height * j),
+                    (self.tile_width * i + dx, self.tile_height * j + dy),
                 )
 
 
 # Generate a list of images for a tile map to draw
 def gen_safe_room_map() -> TileMap:
-    tile_images = [pygame.image.load(tile) for tile in GamePath.groundTiles]
+    tile_images = [pygame.image.load(tile) for tile in GamePath.snowTiles]
     tile_width = SceneSettings.tileWidth
     tile_height = SceneSettings.tileHeight
     tile_images = [

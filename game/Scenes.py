@@ -19,6 +19,7 @@ from Math import *
 from Projectiles import *
 from Maps import *
 from UI import *
+from Effects import EffectManager
 
 
 class Scene:
@@ -41,8 +42,17 @@ class Scene:
         self.dialog_box = DialogBox()
         self.hide_dialog_box()
 
+        # Initialize game camera
+        self.camera = pygame.Rect((0, 0), self.window.get_size())
+
         # Append player to the scene object list
         self.append_object(self.player)
+
+        # Append player health bar
+        self.health_bar = generator.generate(
+            HealthBar(self.player, self.player.rect, dy=20), self
+        )
+        self.append_object(self.health_bar)
 
     # Start function called each time the scene is entered
     def start(self):
@@ -52,15 +62,15 @@ class Scene:
     def update(self):
         # Update collision lists of the collidables
         self.update_collision_list()
+
         # Call start/update functions of mono behaviours
-        for mb in self._mono_behaviors:
-            if not mb.start_called:
-                mb.start()
-                mb.start_called = True
-            else:
-                mb.update()
+        self.update_mono_behaviors()
+
         # Update movement of collidables with velocity
         self.update_velocity_movement()
+
+        # Update game camera at last to assure smooth cam movement
+        self.update_camera(self.player)
 
     # Update the collision list of the collidables needing it
     def update_collision_list(self):
@@ -95,6 +105,15 @@ class Scene:
                     if other not in c.collisions_stay:
                         c.collisions_enter.append(other)
 
+    # Call start/update functions of mono behaviours
+    def update_mono_behaviors(self):
+        for mb in self._mono_behaviors:
+            if not mb.start_called:
+                mb.start()
+                mb.start_called = True
+            else:
+                mb.update()
+
     # Update the movement of the collidables with velocity,
     # avoiding collisions between rigid ones
     # TODO integrate it to updatecollision() to still enter collision list
@@ -126,6 +145,9 @@ class Scene:
             # Finally, update movement based on velocity
             c.rect.move_ip(dx, dy)
 
+            # Also updates velocity
+            c.velocity = (dx, dy)
+
     # Append object to scene object list
     def append_object(self, obj):
         self._objects.append(obj)
@@ -152,21 +174,25 @@ class Scene:
         if isinstance(obj, Portal):
             self._portals.remove(obj)
 
-
     # Sort renderables from the lowest index to the highest
     def sort_renderables(self):
         self._renderables = sorted(self._renderables, key=lambda x: x.render_index)
 
-    def update_camera(self, player):
-        ##### Your Code Here ↓ #####
-        pass
-        ##### Your Code Here ↑ #####
+    def update_camera(self, player: Collidable):
+        self.camera.move_ip(player.velocity[0], player.velocity[1])
+
+    #  Get the offset to be added to the position of the renderables when rendered
+    def get_render_offset(self):
+        dx = -self.camera.x
+        dy = -self.camera.y
+        return (dx, dy)
 
     def render(self):
         self.sort_renderables()
 
+        offset = self.get_render_offset()
         for renderable in self._renderables:
-            renderable.draw(self.window)
+            renderable.draw(self.window, offset[0], offset[1])
 
     def show_dialog_box(self, message):
         npc = message[0]
@@ -221,7 +247,13 @@ class SafeRoomScene(Scene):
             generator.generate(obstacle, scene=self)
 
     def start(self):
+        super().start()
         self.player.reset_pos()
+
+        # Generate teleport anim
+        EffectManager.generate(
+            "teleport", self.player.rect.centerx, self.player.rect.centery - 20
+        )
 
     def render(self):
         # Fill the background with black
@@ -240,20 +272,31 @@ class MobRoomScene(Scene):
         self.tile_map = generator.generate(tile_map, scene=self)
 
         # Init monsters
-        monster = Monster(self.player.rect, 10, 10)
+        monster = Monster(self.player.rect, 100, 100)
         generator.generate(monster, scene=self)
 
+        # Init Boundaries
+        self.boundaries = [
+            Collidable(is_rigid=True, rect=pygame.Rect(0, 0, 10, 1000)),
+            Collidable(is_rigid=True, rect=pygame.Rect(1000, 0, 10, 1000)),
+            Collidable(is_rigid=True, rect=pygame.Rect(0, 0, 1000, 10)),
+            Collidable(is_rigid=True, rect=pygame.Rect(0, 1000, 1000, 10)),
+        ]
+        for b in self.boundaries:
+            generator.generate(b, scene=self)
+
+
     def start(self):
+        super().start()
         self.player.reset_pos()
+
+        # Generate teleport anim
+        EffectManager.generate(
+            "teleport", self.player.rect.centerx, self.player.rect.centery - 20
+        )
 
     def update(self):
         super().update()
-
-        # for item in self._objects:
-        #     if isinstance(item, HealthBar):
-        #         print("yes")
-        #     if isinstance(item, Monster):
-        #         print(item.cur_hp)
 
     def render(self):
         # Render background with black
@@ -262,11 +305,20 @@ class MobRoomScene(Scene):
         # Render renderable objects
         super().render()
 
+        for b in self.boundaries:
+            offset = self.get_render_offset()
+            pygame.draw.rect(
+                self.window,
+                (255, 255, 255),
+                b.rect.move(offset[0], offset[1]),
+            )
+
 
 class ToolRoomScence(Scene):
     """append_object(self.dialogNPC)"""
 
     def start(self):
+        super().start()
         self.player.reset_pos()
 
         self.dialogNPC = DialogNPC(self.player)

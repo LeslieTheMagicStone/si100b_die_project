@@ -12,6 +12,7 @@ class HealthBar(Renderable):
         height=HealthBarSettings.height,
         render_index=RenderIndex.ui,
         is_active=True,
+        dy=HealthBarSettings.dy,
     ):
         super().__init__(render_index, is_active)
 
@@ -21,7 +22,9 @@ class HealthBar(Renderable):
         self.width = width
         self.height = height
 
-    def draw(self, window: pygame.Surface):
+        self.dy = dy
+
+    def draw(self, window: pygame.Surface, dx=0, dy=0):
         # Calculate the width of the health bar based on current health
         bar_fill = (self.owner.cur_hp / self.owner.max_hp) * self.width
 
@@ -30,8 +33,8 @@ class HealthBar(Renderable):
             window,
             (255, 0, 0),
             (
-                self.owner_rect.x,
-                self.owner_rect.y - self.height - HealthBarSettings.dy,
+                self.owner_rect.centerx - self.width // 2 + dx,
+                self.owner_rect.y - self.height - self.dy + dy,
                 self.width,
                 self.height,
             ),
@@ -42,8 +45,8 @@ class HealthBar(Renderable):
             window,
             (0, 255, 0),
             (
-                self.owner_rect.x,
-                self.owner_rect.y - self.height - HealthBarSettings.dy,
+                self.owner_rect.centerx - self.width // 2 + dx,
+                self.owner_rect.y - self.height - self.dy + dy,
                 bar_fill,
                 self.height,
             ),

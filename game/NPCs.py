@@ -9,6 +9,7 @@ from Math import *
 from EventSystem import *
 from Projectiles import *
 from UI import *
+from random import randint
 
 
 class NPC(pygame.sprite.Sprite, Collidable, Renderable, MonoBehavior):
@@ -31,7 +32,7 @@ class NPC(pygame.sprite.Sprite, Collidable, Renderable, MonoBehavior):
         ##### Your Code Here ↑ #####
 
     def draw(self, window: pygame.Surface, dx=0, dy=0):
-        window.blit(self.image, self.rect)
+        window.blit(self.image, self.rect.move(dx, dy))
 
 
 """DialogNPC就是道具"""
@@ -101,20 +102,20 @@ class Monster(NPC, Damageable):
     def handle_movement(self):
         # Straightly moves towards the player
         dir = (self.player_rect.x - self.rect.x, self.player_rect.y - self.rect.y)
-        movement = Math.round(Math.dot(Math.normalize(dir), self.speed))
+        movement = Math.round(Math.scale(Math.normalize(dir), self.speed))
         self.velocity = (movement[0], movement[1])
 
     def handle_damage(self, damage):
         if self.is_invulnerable:
-            return
+            return 0
 
         damage = max(0, damage - self.defence)
         self.cur_hp = max(0, self.cur_hp - damage)
 
-        EventSystem.fire_hit_event(damage, self.rect.center)
-
         if self.cur_hp == 0:
             self.handle_death()
+
+        return damage
 
     def handle_death(self):
         EventSystem.fire_destroy_event(self.health_bar)
@@ -131,10 +132,17 @@ class Monster(NPC, Damageable):
         for enter in self.collisions_enter:
             if isinstance(enter, Projectile):
                 if isinstance(enter, Bullet):
-                    self.handle_damage(enter.damage)
+                    damage = self.handle_damage(enter.damage)
+                    # Generate random offset of the hit point to make the game juicier
+                    ortho_normal = Math.ortho_normal(enter.velocity)
+                    random_offset = Math.scale(ortho_normal, randint(-20, 20))
+                    EventSystem.fire_hit_event(
+                        damage, Math.add(random_offset, enter.rect.center)
+                    )
+                    EventSystem.fire_destroy_event(enter)
 
     def draw(self, window: pygame.Surface, dx=0, dy=0):
-        window.blit(self.image, self.rect)
+        window.blit(self.image, self.rect.move(dx, dy))
 
 
 class Boss(pygame.sprite.Sprite):
