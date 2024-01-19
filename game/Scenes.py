@@ -18,6 +18,8 @@ from EventSystem import *
 from Math import *
 from Projectiles import *
 from Maps import *
+from UI import *
+from Effects import EffectManager
 
 
 class Scene:
@@ -33,13 +35,24 @@ class Scene:
         self._mono_behaviors: list[MonoBehavior] = []
         # List of all renderables
         self._renderables: list[Renderable] = []
+        # List of all portals
+        self._portals: list[Portal] = []
 
         # Initialize a global dialog box
         self.dialog_box = DialogBox()
         self.hide_dialog_box()
 
+        # Initialize game camera
+        self.camera = pygame.Rect((0, 0), self.window.get_size())
+
         # Append player to the scene object list
         self.append_object(self.player)
+
+        # Append player health bar
+        self.health_bar = generator.generate(
+            HealthBar(self.player, self.player.rect, dy=20), self
+        )
+        self.append_object(self.health_bar)
 
     # Start function called each time the scene is entered
     def start(self):
@@ -47,40 +60,98 @@ class Scene:
 
     # Update function called once per frame
     def update(self):
+        # Call start/update functions of mono behaviours
+        self.update_mono_behaviors()
+
         # Update collision lists of the collidables
         self.update_collision_list()
-        # Call update functions of mono behaviours
-        for mb in self._mono_behaviors:
-            mb.update()
+
+        # Update movement of collidables with velocity
+        self.update_velocity_movement()
+
+        # Update game camera at last to assure smooth cam movement
+        self.update_camera(self.player)
 
     # Update the collision list of the collidables needing it
     def update_collision_list(self):
-        for collidable in self._collidables:
+        for c in self._collidables:
             # Only need to update those collidables which need collision list
-            if not collidable.need_collision_list:
+            if not c.need_collision_list:
                 continue
 
+            # Assume they all move without bumping into others
+            (dx, dy) = c.velocity
+            c.rect.move_ip(dx, dy)
+
             # Clear all objects in exit list
-            collidable.collisions_exit = []
+            c.collisions_exit = []
 
             # Update stay list (of last frame)
-            for other in collidable.collisions_stay:
-                if not collidable.rect.colliderect(other):
-                    collidable.collisions_stay.remove(other)
-                    collidable.collisions_exit.append(other)
+            for other in c.collisions_stay:
+                if not c.rect.colliderect(other):
+                    c.collisions_stay.remove(other)
+                    c.collisions_exit.append(other)
 
             # Update enter list (of last frame)
-            for other in collidable.collisions_enter:
-                collidable.collisions_enter.remove(other)
-                if collidable.rect.colliderect(other):
-                    collidable.collisions_stay.append(other)
+            for other in c.collisions_enter:
+                c.collisions_enter.remove(other)
+                if c.rect.colliderect(other):
+                    c.collisions_stay.append(other)
                 else:
-                    collidable.collisions_exit.append(other)
+                    c.collisions_exit.append(other)
             # Check new collision enters (of this frame)
             for other in self._collidables:
-                if other.rect.colliderect(collidable.rect):
-                    if other not in collidable.collisions_stay:
-                        collidable.collisions_enter.append(other)
+                # Of course collision of itself does not count
+                if other is c:
+                    continue
+
+                if other.rect.colliderect(c.rect):
+                    if other not in c.collisions_stay:
+                        c.collisions_enter.append(other)
+
+            # Don't forget to set the position back to original
+            c.rect.move_ip(-dx, -dy)
+
+    # Call start/update functions of mono behaviours
+    def update_mono_behaviors(self):
+        for mb in self._mono_behaviors:
+            if not mb.start_called:
+                mb.start()
+                mb.start_called = True
+            else:
+                mb.update()
+
+    # Update the movement of the collidables with velocity,
+    # avoiding collisions between rigid ones
+    def update_velocity_movement(self):
+        for c in self._collidables:
+            # Only need to update collidables with velocity
+            if c.velocity == (0, 0):
+                continue
+
+            dx = c.velocity[0]
+            dy = c.velocity[1]
+
+            target_pos_x = c.rect.move(dx, 0)
+            target_pos_y = c.rect.move(0, dy)
+
+            # Only need to detect collisions between rigid collidables
+            if c.is_rigid:
+                for other in self._collidables:
+                    if other is not c and other.is_rigid:
+                        # Avoid x and y movement separately
+                        # to get smoother movement
+                        if other.rect.colliderect(target_pos_x):
+                            dx = 0
+
+                        if other.rect.colliderect(target_pos_y):
+                            dy = 0
+
+            # Finally, update movement based on velocity
+            c.rect.move_ip(dx, dy)
+
+            # Also updates velocity
+            c.velocity = (dx, dy)
 
     # Append object to scene object list
     def append_object(self, obj):
@@ -92,22 +163,41 @@ class Scene:
             self._mono_behaviors.append(obj)
         if isinstance(obj, Renderable):
             self._renderables.append(obj)
+        if isinstance(obj, Portal):
+            self._portals.append(obj)
 
+    # Remove object from scene object list
+    def remove_object(self, obj):
+        self._objects.remove(obj)
+
+        if isinstance(obj, Collidable):
+            self._collidables.remove(obj)
+        if isinstance(obj, MonoBehavior):
+            self._mono_behaviors.remove(obj)
+        if isinstance(obj, Renderable):
+            self._renderables.remove(obj)
+        if isinstance(obj, Portal):
+            self._portals.remove(obj)
 
     # Sort renderables from the lowest index to the highest
     def sort_renderables(self):
         self._renderables = sorted(self._renderables, key=lambda x: x.render_index)
 
-    def update_camera(self, player):
-        ##### Your Code Here ↓ #####
-        pass
-        ##### Your Code Here ↑ #####
+    def update_camera(self, player: Collidable):
+        self.camera.move_ip(player.velocity[0], player.velocity[1])
+
+    #  Get the offset to be added to the position of the renderables when rendered
+    def get_render_offset(self):
+        dx = -self.camera.x
+        dy = -self.camera.y
+        return (dx, dy)
 
     def render(self):
         self.sort_renderables()
 
+        offset = self.get_render_offset()
         for renderable in self._renderables:
-            renderable.draw(self.window)
+            renderable.draw(self.window, offset[0], offset[1])
 
     def show_dialog_box(self, message):
         npc = message[0]
@@ -149,14 +239,26 @@ class SafeRoomScene(Scene):
         super().__init__(data)
 
         # Init tile map
-        map_obj = Maps.gen_safety_room_map()
-        self.tile_map = generator.generate(TileMap(map_obj), self)
+        tile_map = Maps.gen_safe_room_map()
+        self.tile_map = generator.generate(tile_map, scene=self)
 
         # Init portals
-        generator.generate(Portal(123, 123, "Mob Room"), self)
+        generator.generate(Portal(123, 123, "Mob Room"), scene=self)
+
+        # Init obstacles
+        rects_to_avoid = [portal.rect for portal in self._portals] + [self.player.rect]
+        self.obstacles = Maps.gen_safe_room_obstacles(rects_to_avoid)
+        for obstacle in self.obstacles:
+            generator.generate(obstacle, scene=self)
 
     def start(self):
+        super().start()
         self.player.reset_pos()
+
+        # Generate teleport anim
+        EffectManager.generate(
+            "teleport", self.player.rect.centerx, self.player.rect.centery - 20
+        )
 
     def render(self):
         # Fill the background with black
@@ -170,12 +272,32 @@ class MobRoomScene(Scene):
     def __init__(self, data: SceneTransferData):
         super().__init__(data)
 
+        # Init tile map
+        tile_map = Maps.gen_mob_room_map()
+        self.tile_map = generator.generate(tile_map, scene=self)
+
         # Init monsters
-        monster = Monster(self.player.rect, 10, 10)
-        generator.generate(monster, self)
+        monster = Monster(self.player.rect, 100, 100)
+        generator.generate(monster, scene=self)
+
+        # Init Boundaries
+        self.boundaries = [
+            Collidable(is_rigid=True, rect=pygame.Rect(0, 0, 10, 1000)),
+            Collidable(is_rigid=True, rect=pygame.Rect(1000, 0, 10, 1000)),
+            Collidable(is_rigid=True, rect=pygame.Rect(0, 0, 1000, 10)),
+            Collidable(is_rigid=True, rect=pygame.Rect(0, 1000, 1000, 10)),
+        ]
+        for b in self.boundaries:
+            generator.generate(b, scene=self)
 
     def start(self):
+        super().start()
         self.player.reset_pos()
+
+        # Generate teleport anim
+        EffectManager.generate(
+            "teleport", self.player.rect.centerx, self.player.rect.centery - 20
+        )
 
     def update(self):
         super().update()
@@ -187,11 +309,20 @@ class MobRoomScene(Scene):
         # Render renderable objects
         super().render()
 
+        for b in self.boundaries:
+            offset = self.get_render_offset()
+            pygame.draw.rect(
+                self.window,
+                (255, 255, 255),
+                b.rect.move(offset[0], offset[1]),
+            )
+
 
 class ToolRoomScence(Scene):
     """append_object(self.dialogNPC)"""
 
     def start(self):
+        super().start()
         self.player.reset_pos()
 
         self.dialogNPC = DialogNPC(self.player)

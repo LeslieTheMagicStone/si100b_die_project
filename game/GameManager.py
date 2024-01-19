@@ -6,8 +6,8 @@ import pygame
 from Player import Player
 from Scenes import *
 from Settings import *
-from PopUpBox import *
 from SceneTransferData import *
+from Effects import EffectManager
 
 
 class GameManager:
@@ -24,6 +24,7 @@ class GameManager:
 
         # Initialize player
         self.player = Player(0, 0)
+        self.player.reset_pos()
 
         # Initialize scenes
         self.scenes: List[Scene] = []
@@ -59,6 +60,7 @@ class GameManager:
                 self.scene.start()
                 self.game_state = GameState.GAME_PLAY
                 pygame.display.set_caption(f"{WindowSettings.name} - {self.scene.name}")
+                SceneManager.current_scene = self.scene.name
             else:
                 raise IndexError(f"Scene index: {GOTO} out of range")
 
@@ -101,35 +103,19 @@ class GameManager:
                 scene.append_object(event.message[0])
             elif event.type == GameEvent.EVENT_DIALOG:
                 self.scene.show_dialog_box(event.message)
-
-    # Collision-relate update funtions here ↓
-    def update_collide(self):
-        # Player -> Obstacles
-        ##### Your Code Here ↓ #####
-        pass
-        ##### Your Code Here ↑ #####
-
-        # Player -> NPCs; if multiple NPCs collided, only first is accepted and dealt with.
-        ##### Your Code Here ↓ #####
-        pass
-        ##### Your Code Here ↑ #####
-
-        # Player -> Monsters
-        ##### Your Code Here ↓ #####
-        pass
-        ##### Your Code Here ↑ #####
-
-        # Player -> Portals
-        ##### Your Code Here ↓ #####
-        pass
-        ##### Your Code Here ↑ #####
-
-        # Player -> Boss
-        ##### Your Code Here ↓ #####
-        pass
-        ##### Your Code Here ↑ #####
-
-    """ Rendering-related update functions """
+            elif event.type == GameEvent.EVENT_DESTROY:
+                # Append object to the scene object list
+                scene = event.message[1]
+                # Default Scene is current scene
+                if scene is None:
+                    scene = self.scene
+                scene.remove_object(event.message[0])
+            elif event.type == GameEvent.EVENT_HIT:
+                # Generate smoke animation
+                damage = event.message[0]
+                position = event.message[1]
+                EffectManager.generate(f"text: {damage}", position[0], position[1])
+                EffectManager.generate("smoke", position[0], position[1])
 
     def pack_scene_transfer_data(self, name) -> SceneTransferData:
         return SceneTransferData(player=self.player, window=self.window, name=name)

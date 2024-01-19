@@ -42,14 +42,14 @@ class DialogBox(Renderable):
     def set_npc(self, npc):
         self.npc = npc
 
-    def draw(self, window: pygame.Surface):
+    def draw(self, window: pygame.Surface, dx=0, dy=0):
         if not self.is_active:
             return
 
         window.blit(
             self.bg, (DialogSettings.boxStartX, DialogSettings.boxStartY)
         )  # 绘制背景
-        
+
         if self.npc is not None:
             image = pygame.Surface.copy(self.npc)
             image = pygame.transform.scale(

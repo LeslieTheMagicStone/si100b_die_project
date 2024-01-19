@@ -15,6 +15,7 @@ class SceneSettings:
     tileXnum = 48  # 64
     tileYnum = 27  # 36
     tileWidth = tileHeight = 40
+    obstacleDensity = 0.12
 
 
 class PlayerSettings:
@@ -26,6 +27,7 @@ class PlayerSettings:
     attack = 5
     defence = 1
     money = 100
+    animIntervalSecond = 0.1
 
 
 class NPCSettings:
@@ -116,12 +118,8 @@ class GamePath:
     npc = r".\assets\npc\npc.png"
     player = [
         r".\assets\player\1.png",
-        r".\assets\player\1.png",
-        r".\assets\player\2.png",
         r".\assets\player\2.png",
         r".\assets\player\3.png",
-        r".\assets\player\3.png",
-        r".\assets\player\4.png",
         r".\assets\player\4.png",
         # 8 frames for a single loop of animation looks much better.
     ]
@@ -148,6 +146,15 @@ class GamePath:
 
     cityWall = r".\assets\tiles\cityWall.png"
 
+    snowTiles = [
+        r".\assets\tiles\snow1.png",
+        r".\assets\tiles\snow2.png",
+        r".\assets\tiles\snow3.png",
+        r".\assets\tiles\snow4.png",
+        r".\assets\tiles\snow5.png",
+        r".\assets\tiles\snow6.png",
+    ]
+
     bossTiles = [
         r".\assets\tiles\boss1.png",
         r".\assets\tiles\boss2.png",
@@ -165,12 +172,38 @@ class GamePath:
 
     bgm = [r".\assets\bgm\city.mp3", r".\assets\bgm\wild.mp3", r".\assets\bgm\boss.mp3"]
 
+    smoke = [
+        r".\assets\effects\Smoke\FX001\FX001_01.png",
+        r".\assets\effects\Smoke\FX001\FX001_02.png",
+        r".\assets\effects\Smoke\FX001\FX001_03.png",
+        r".\assets\effects\Smoke\FX001\FX001_04.png",
+        r".\assets\effects\Smoke\FX001\FX001_05.png",
+    ]
+
+    teleport = [
+        r".\assets\effects\Smoke\FX002\FX002_01.png",
+        r".\assets\effects\Smoke\FX002\FX002_02.png",
+        r".\assets\effects\Smoke\FX002\FX002_03.png",
+        r".\assets\effects\Smoke\FX002\FX002_04.png",
+        r".\assets\effects\Smoke\FX002\FX002_05.png",
+        r".\assets\effects\Smoke\FX002\FX002_06.png",
+        r".\assets\effects\Smoke\FX002\FX002_07.png",
+        r".\assets\effects\Smoke\FX002\FX002_08.png",
+    ]
+
 
 class PortalSettings:
     width = 160
     height = 160
     coordX = (SceneSettings.tileXnum - 10) * SceneSettings.tileWidth - width / 2
     coordY = (SceneSettings.tileYnum / 2) * SceneSettings.tileHeight - height / 2
+
+
+class HealthBarSettings:
+    width = 60
+    height = 10
+    dy = 10
+
 
 class RenderIndex:
     portal = 0
@@ -179,11 +212,14 @@ class RenderIndex:
     npc = 4
     block = -1
     tileMap = -2
-
+    projectile = 3
+    ui = 10
+    effect = 9
 
 
 class ProjectileSettings:
     bulletSpeed = 10
+    bulletDamage = 2
 
 
 class GameState(Enum):
@@ -198,9 +234,16 @@ class GameState(Enum):
 class GameEvent:
     EVENT_BATTLE = pygame.USEREVENT + 1
     EVENT_DIALOG = pygame.USEREVENT + 2
+    # Go to another scene
     EVENT_SWITCH = pygame.USEREVENT + 3
+    # Restart the game
     EVENT_RESTART = pygame.USEREVENT + 4
     EVENT_SHOP = pygame.USEREVENT + 5
+    # Player gets hurt
     EVENT_HURT = pygame.USEREVENT + 6
+    # Append object to scene._objects
     EVENT_GENERATE = pygame.USEREVENT + 7
-
+    # Enemy gets hurt
+    EVENT_HIT = pygame.USEREVENT + 8
+    # Remove object from scene._objects
+    EVENT_DESTROY = pygame.USEREVENT + 9
