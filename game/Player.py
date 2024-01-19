@@ -16,7 +16,9 @@ from Projectiles import *
 from UI import *
 
 
-class Player(pygame.sprite.Sprite, Collidable, Damageable, MonoBehavior, Renderable):
+class Player(
+    pygame.sprite.Sprite, Collidable, Damageable, MonoBehavior, Renderable, Buffrable
+):
     def __init__(self, x, y):
         # Must initialize everything one by one here
         pygame.sprite.Sprite.__init__(self)
@@ -24,6 +26,7 @@ class Player(pygame.sprite.Sprite, Collidable, Damageable, MonoBehavior, Rendera
         Damageable.__init__(self)
         MonoBehavior.__init__(self)
         Renderable.__init__(self, render_index=RenderIndex.player)
+        Buffrable.__init__(self)
 
         # Animation related
         self.images = [
@@ -53,6 +56,7 @@ class Player(pygame.sprite.Sprite, Collidable, Damageable, MonoBehavior, Rendera
         # Fire related
         self.fire_cd = 0.5
         self.fire_timer = 0
+        self.Buff_state["Projectiles"] = 0
 
     def reset_pos(self, x=WindowSettings.width // 2, y=WindowSettings.height // 2):
         self.rect.center = (x, y)
@@ -62,6 +66,7 @@ class Player(pygame.sprite.Sprite, Collidable, Damageable, MonoBehavior, Rendera
         self.handle_movement()
         self.handle_collisions()
         self.handle_animation()
+        self.handle_bullet_change()
 
     def handle_animation(self):
         # Only need to play run animation when running
@@ -95,6 +100,12 @@ class Player(pygame.sprite.Sprite, Collidable, Damageable, MonoBehavior, Rendera
 
         self.velocity = velocity
 
+    def handle_bullet_change(self):
+        keys = pygame.key.get_pressed()
+
+        if keys[pygame.K_u]:
+            self.change_Buff("Projectiles", (self.Buff_state["Projectiles"] + 1) % 2)
+
     def handle_fire(self):
         if self.fire_timer > 0:
             self.fire_timer -= Time.delta_time
@@ -113,12 +124,20 @@ class Player(pygame.sprite.Sprite, Collidable, Damageable, MonoBehavior, Rendera
         if keys[pygame.K_RIGHT]:
             dx += 1
 
-        if (dx, dy) != (0, 0):
+        if ((dx, dy) != (0, 0)) and self.Buff_state["Projectiles"] == 0:
             bullet_velocity = Math.scale(
                 Math.normalize((dx, dy)), ProjectileSettings.bulletSpeed
             )
             bullet = generator.generate(
                 Bullet(self.rect.centerx, self.rect.centery, bullet_velocity)
+            )
+
+        elif ((dx, dy) != (0, 0)) and self.Buff_state["Projectiles"] == 1:
+            bullet_velocity = Math.scale(
+                Math.normalize((dx, dy)), ProjectileSettings.bulletSpeed / 2
+            )
+            bullet = generator.generate(
+                Big_bullet(self.rect.centerx, self.rect.centery, bullet_velocity)
             )
 
             self.fire_timer = self.fire_cd
@@ -149,6 +168,8 @@ class Player(pygame.sprite.Sprite, Collidable, Damageable, MonoBehavior, Rendera
     def draw(self, window: pygame.Surface, dx=0, dy=0):
         # Calculate top-left corner of the picture separately
         # because that of the rect has been changed when scaling
-        image_pos_x = self.rect.centerx - self.image.get_width() // 2 - 8 # tiny offset to look more realistic
+        image_pos_x = (
+            self.rect.centerx - self.image.get_width() // 2 - 8
+        )  # tiny offset to look more realistic
         image_pos_y = self.rect.centery - self.image.get_height() // 2
         window.blit(self.image, (image_pos_x + dx, image_pos_y + dy))
