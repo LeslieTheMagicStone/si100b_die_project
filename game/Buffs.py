@@ -3,6 +3,11 @@ from pygame import *
 
 
 class Buff:
+    pass
+
+
+"""
+class Buff:
     def start(self):
         pass
 
@@ -21,4 +26,5 @@ class Invulnerable(Buff):
         pass
 
     def update(self):
-        pass 
+        pass
+"""

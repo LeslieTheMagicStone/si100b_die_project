@@ -1,5 +1,6 @@
 from enum import Enum
 import pygame
+from Buffs import *
 
 
 # MonoBehaviors have update() function
@@ -63,3 +64,20 @@ class Damageable:
         raise NotImplementedError(
             f"The handle_damge() method is not implemented in {self}"
         )
+
+
+class Buffrable:
+    def __init__(self) -> None:
+        # 角色的BUFF状态，初始啥都是空，空即为最初的状态
+        self.Buff_state = {}
+
+    """buff_num 为此BUFF对应的状态"""
+
+    def add_Buff(self, buff_name: str, buff_num: int):
+        self.Buff_state[buff_name] = buff_num
+
+    def change_Buff(self, buff_name: str, buff_num: int):
+        self.Buff_state[buff_name] = buff_num
+
+    def delete_Buff(self, buff_name: str, buff_num: int):
+        del self.Buff_state[buff_name]
