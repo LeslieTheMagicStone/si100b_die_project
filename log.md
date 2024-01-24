@@ -28,3 +28,6 @@
 3. 添加视觉特效类`Effect`, 可以用`EffectManager.generate()`全局生成特效
 4. 添加子弹击中特效，造成伤害数字，玩家出生特效
 5. 现在能根据`Collidable.velocity`预测碰撞，更新碰撞列表
+
+## 1/24
+1. 添加墙壁

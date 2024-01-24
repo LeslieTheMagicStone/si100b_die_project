@@ -98,6 +98,9 @@ class Player(
 
         velocity = Math.scale(Math.normalize((dx, dy)), self.speed)
 
+        if keys[pygame.K_LSHIFT]:
+            velocity = Math.scale(velocity, 2)
+
         self.velocity = velocity
 
     def handle_bullet_change(self):

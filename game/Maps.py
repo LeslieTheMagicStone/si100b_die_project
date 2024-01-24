@@ -47,6 +47,15 @@ class TileMap(Renderable):
         self.tile_width = tile_width
         self.tile_height = tile_height
 
+    # Get the position of [top left, bottom right]
+    def get_corners(self):
+        # Add 1/2 to transfer center point to bottom right point
+        tlx = -self.tile_width // 2
+        tly = -self.tile_height // 2
+        brx = int(self.tile_width * (len(self.map) - 1 / 2))
+        bry = int(self.tile_height * (len(self.map[0]) - 1 / 2))
+        return [(tlx, tly), (brx, bry)]
+
     def draw(self, window: pygame.Surface, dx=0, dy=0):
         if not self.is_active:
             return
@@ -55,7 +64,10 @@ class TileMap(Renderable):
             for j in range(len(self.map[i])):
                 window.blit(
                     self.map[i][j],
-                    (self.tile_width * i + dx, self.tile_height * j + dy),
+                    (
+                        self.tile_width * (i - 0.5) + dx,
+                        self.tile_height * (j - 0.5) + dy,
+                    ),
                 )
 
 
@@ -79,7 +91,36 @@ def gen_safe_room_map() -> TileMap:
     return TileMap(map_obj)
 
 
-def gen_mob_room_map():
+# Generate walls around the given tiles
+def gen_walls(corners) -> list[pygame.Surface]:
+    [topleft, bottomright] = corners
+    width = SceneSettings.tileWidth
+    height = SceneSettings.tileHeight
+
+    image = pygame.image.load(GamePath.cityWall)
+    walls = []
+
+    # Top
+    for x in range(topleft[0] - width // 2, bottomright[0] + width // 2, width):
+        y = topleft[1] - height // 2
+        walls.append(Block(image, x, y, width, height))
+    # Bottom
+    for x in range(topleft[0] - width // 2, bottomright[0] + width // 2, width):
+        y = bottomright[1] + height // 2
+        walls.append(Block(image, x, y, width, height))
+    # Left
+    for y in range(topleft[1] - height // 2, bottomright[1] + height // 2 + 1, height):
+        x = topleft[0] - width // 2
+        walls.append(Block(image, x, y, width, height))
+    # Right
+    for y in range(topleft[1] - height // 2, bottomright[1] + height // 2 + 1, height):
+        x = bottomright[0] + width // 2
+        walls.append(Block(image, x, y, width, height))
+
+    return walls
+
+
+def gen_mob_room_map() -> TileMap:
     tile_images = [pygame.image.load(tile) for tile in GamePath.bossTiles]
     tile_width = SceneSettings.tileWidth
     tile_height = SceneSettings.tileHeight
@@ -104,7 +145,7 @@ def gen_boss_map():
     ##### Your Code Here ↑ #####
 
 
-def gen_safe_room_obstacles(rects_to_avoid: list[pygame.Rect]) -> list[pygame.Surface]:
+def gen_safe_room_obstacles(rects_to_avoid: list[pygame.Rect]) -> list[Block]:
     image = pygame.image.load(GamePath.tree)
 
     obstacles = []

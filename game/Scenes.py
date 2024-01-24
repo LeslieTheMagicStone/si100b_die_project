@@ -241,6 +241,10 @@ class SafeRoomScene(Scene):
         # Init tile map
         tile_map = Maps.gen_safe_room_map()
         self.tile_map = generator.generate(tile_map, scene=self)
+        print("DD")
+
+        print(self.tile_map.get_corners())
+        print("DD")
 
         # Init portals
         generator.generate(Portal(123, 123, "Mob Room"), scene=self)
@@ -250,6 +254,11 @@ class SafeRoomScene(Scene):
         self.obstacles = Maps.gen_safe_room_obstacles(rects_to_avoid)
         for obstacle in self.obstacles:
             generator.generate(obstacle, scene=self)
+        
+        # Init walls
+        self.walls = Maps.gen_walls(self.tile_map.get_corners())
+        for wall in self.walls:
+            generator.generate(wall, scene=self)
 
     def start(self):
         super().start()
@@ -280,15 +289,10 @@ class MobRoomScene(Scene):
         monster = Monster(self.player.rect, 100, 100)
         generator.generate(monster, scene=self)
 
-        # Init Boundaries
-        self.boundaries = [
-            Collidable(is_rigid=True, rect=pygame.Rect(0, 0, 10, 1000)),
-            Collidable(is_rigid=True, rect=pygame.Rect(1000, 0, 10, 1000)),
-            Collidable(is_rigid=True, rect=pygame.Rect(0, 0, 1000, 10)),
-            Collidable(is_rigid=True, rect=pygame.Rect(0, 1000, 1000, 10)),
-        ]
-        for b in self.boundaries:
-            generator.generate(b, scene=self)
+        # Init walls
+        self.walls = Maps.gen_walls(self.tile_map.get_corners())
+        for wall in self.walls:
+            generator.generate(wall, scene=self)
 
     def start(self):
         super().start()
@@ -309,13 +313,6 @@ class MobRoomScene(Scene):
         # Render renderable objects
         super().render()
 
-        for b in self.boundaries:
-            offset = self.get_render_offset()
-            pygame.draw.rect(
-                self.window,
-                (255, 255, 255),
-                b.rect.move(offset[0], offset[1]),
-            )
 
 
 class ToolRoomScence(Scene):
