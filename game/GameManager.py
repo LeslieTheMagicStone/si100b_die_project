@@ -92,6 +92,14 @@ class GameManager:
             if event.type == pygame.QUIT:
                 pygame.quit()
                 # No need to sys.exit(), right?
+            elif event.type == pygame.KEYDOWN:
+            # Check if the key is already down
+                if event.key not in Input.key_down or not Input.key_down[event.key]:
+                    # This is the first frame of the key down event
+                    Input.key_down[event.key] = True
+            elif event.type == pygame.KEYUP:
+                # Reset the key state when the key is released
+                Input.key_down[event.key] = False
             elif event.type == GameEvent.EVENT_RESTART:
                 self.game_reset()
             elif event.type == GameEvent.EVENT_SWITCH:

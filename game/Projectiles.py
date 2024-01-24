@@ -3,7 +3,6 @@ import pygame
 from Settings import *
 from Math import *
 from Attributes import *
-from Buffs import *
 
 
 class Projectile(pygame.sprite.Sprite, MonoBehavior, Renderable, Collidable):

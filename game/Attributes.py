@@ -1,6 +1,5 @@
 from enum import Enum
 import pygame
-from Buffs import *
 
 
 # MonoBehaviors have update() function
@@ -43,9 +42,9 @@ class Collidable:
         self.velocity = (0, 0)
         # With this enabled, the enter/stay/exit list will be updated once per frame
         self.need_collision_list = need_collision_list
-        self.collisions_enter = []
-        self.collisions_stay = []
-        self.collisions_exit = []
+        self.collisions_enter: list[Collidable] = []
+        self.collisions_stay: list[Collidable] = []
+        self.collisions_exit: list[Collidable] = []
 
     # Used to debug
     def show_rect(self, window: pygame.Surface, dx, dy, color=(0, 0, 0)):
@@ -57,27 +56,22 @@ class Damageable:
         # All Damageables should have hp
         self.cur_hp = 0
         self.max_hp = 0
-        # If is invulnerable, it will not take any damage
-        self.is_invulnerable = False
 
     def handle_damage(self) -> None:
         raise NotImplementedError(
-            f"The handle_damge() method is not implemented in {self}"
+            f"The handle_damage() method is not implemented in {self}"
         )
 
 
-class Buffrable:
+class Buffable:
     def __init__(self) -> None:
         # 角色的BUFF状态，初始啥都是空，空即为最初的状态
         self.Buff_state = {}
 
-    """buff_num 为此BUFF对应的状态"""
+    """buff_time 为此BUFF对应的时间，-1代表永久"""
 
-    def add_Buff(self, buff_name: str, buff_num: int):
-        self.Buff_state[buff_name] = buff_num
+    def add_Buff(self, buff_name: str, buff_time: float):
+        self.Buff_state[buff_name] = buff_time
 
-    def change_Buff(self, buff_name: str, buff_num: int):
-        self.Buff_state[buff_name] = buff_num
-
-    def delete_Buff(self, buff_name: str, buff_num: int):
+    def delete_Buff(self, buff_name: str):
         del self.Buff_state[buff_name]

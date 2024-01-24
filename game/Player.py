@@ -17,7 +17,7 @@ from UI import *
 
 
 class Player(
-    pygame.sprite.Sprite, Collidable, Damageable, MonoBehavior, Renderable, Buffrable
+    pygame.sprite.Sprite, Collidable, Damageable, MonoBehavior, Renderable, Buffable
 ):
     def __init__(self, x, y):
         # Must initialize everything one by one here
@@ -26,7 +26,7 @@ class Player(
         Damageable.__init__(self)
         MonoBehavior.__init__(self)
         Renderable.__init__(self, render_index=RenderIndex.player)
-        Buffrable.__init__(self)
+        Buffable.__init__(self)
 
         # Animation related
         self.images = [
@@ -56,17 +56,30 @@ class Player(
         # Fire related
         self.fire_cd = 0.5
         self.fire_timer = 0
-        self.Buff_state["Projectiles"] = 0
+        self.bullet_type = 0
 
     def reset_pos(self, x=WindowSettings.width // 2, y=WindowSettings.height // 2):
         self.rect.center = (x, y)
 
     def update(self):
+        self.update_buffs()
+        self.handle_bullet_change()
         self.handle_fire()
         self.handle_movement()
         self.handle_collisions()
         self.handle_animation()
-        self.handle_bullet_change()
+
+    def update_buffs(self):
+        to_be_deleted = []
+        for (buff, buff_time) in self.Buff_state.items():
+            if buff_time > 0:
+                self.Buff_state[buff] -= Time.delta_time
+            elif buff_time <0 and buff_time!=-1:
+                to_be_deleted.append(buff)
+
+        for buff in to_be_deleted:
+            self.delete_Buff(buff)
+            
 
     def handle_animation(self):
         # Only need to play run animation when running
@@ -104,10 +117,8 @@ class Player(
         self.velocity = velocity
 
     def handle_bullet_change(self):
-        keys = pygame.key.get_pressed()
-
-        if keys[pygame.K_u]:
-            self.change_Buff("Projectiles", (self.Buff_state["Projectiles"] + 1) % 2)
+        if pygame.K_u in Input.key_down.keys() and Input.key_down[pygame.K_u]:
+            self.bullet_type = (self.bullet_type + 1) % 2
 
     def handle_fire(self):
         if self.fire_timer > 0:
@@ -127,7 +138,7 @@ class Player(
         if keys[pygame.K_RIGHT]:
             dx += 1
 
-        if ((dx, dy) != (0, 0)) and self.Buff_state["Projectiles"] == 0:
+        if ((dx, dy) != (0, 0)) and self.bullet_type == 0:
             bullet_velocity = Math.scale(
                 Math.normalize((dx, dy)), ProjectileSettings.bulletSpeed
             )
@@ -135,7 +146,7 @@ class Player(
                 Bullet(self.rect.centerx, self.rect.centery, bullet_velocity)
             )
 
-        elif ((dx, dy) != (0, 0)) and self.Buff_state["Projectiles"] == 1:
+        elif ((dx, dy) != (0, 0)) and self.bullet_type == 1:
             bullet_velocity = Math.scale(
                 Math.normalize((dx, dy)), ProjectileSettings.bulletSpeed / 2
             )
@@ -146,12 +157,13 @@ class Player(
             self.fire_timer = self.fire_cd
 
     def handle_damage(self, damage):
-        if self.is_invulnerable:
+        if "Invulnerable" in self.Buff_state.keys():
             return 0
 
-        damage = max(0, damage - self.defence)
+        damage = max(1, damage - self.defence)
         self.cur_hp = max(0, self.cur_hp - damage)
         EventSystem.fire_hurt_event(damage)
+        self.add_Buff("Invulnerable", 0.5)
 
         return damage
 

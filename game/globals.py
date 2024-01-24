@@ -5,4 +5,7 @@ class Time:
 class SceneManager:
     current_scene = ""
 
+class Input:
+    key_down = {}
+
     

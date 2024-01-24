@@ -74,14 +74,15 @@ class Scene:
 
     # Update the collision list of the collidables needing it
     def update_collision_list(self):
+        # Assume they all move without bumping into others
+        for c in self._collidables:
+            (dx, dy) = c.velocity
+            c.rect.move_ip(dx, dy)
+
         for c in self._collidables:
             # Only need to update those collidables which need collision list
             if not c.need_collision_list:
                 continue
-
-            # Assume they all move without bumping into others
-            (dx, dy) = c.velocity
-            c.rect.move_ip(dx, dy)
 
             # Clear all objects in exit list
             c.collisions_exit = []
@@ -109,7 +110,9 @@ class Scene:
                     if other not in c.collisions_stay:
                         c.collisions_enter.append(other)
 
-            # Don't forget to set the position back to original
+        # Don't forget to set the position back to original
+        for c in self._collidables:
+            (dx, dy) = c.velocity
             c.rect.move_ip(-dx, -dy)
 
     # Call start/update functions of mono behaviours
@@ -215,7 +218,9 @@ class MainMenuScene(Scene):
     def start(self):
         self.images = [
             pygame.image.load(
-                r".\assets\main_menu\niu_niu\frame_" + "{:02d}".format(i) + "_delay-0.04s.gif"
+                r".\assets\main_menu\niu_niu\frame_"
+                + "{:02d}".format(i)
+                + "_delay-0.04s.gif"
             )
             for i in range(0, 75)
         ]
