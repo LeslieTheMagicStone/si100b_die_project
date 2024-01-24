@@ -213,17 +213,40 @@ class Scene:
 
 class MainMenuScene(Scene):
     def start(self):
-        self.player_image = pygame.image.load(GamePath.player[0])
-        self.icon_rect = self.player_image.get_rect()
+        self.images = [
+            pygame.image.load(
+                r".\assets\main_menu\niu_niu\frame_" + "{:02d}".format(i) + "_delay-0.04s.gif"
+            )
+            for i in range(0, 75)
+        ]
+        self.images = [
+            pygame.transform.scale(image, (120, 120)) for image in self.images
+        ]
+        self.frame = 0
+        self.image = self.images[self.frame]
+        self.rect = self.image.get_rect()
+        self.move_right = 1
+        self.move_down = 1
 
     def update(self):
         super().update()
         # A warm-up mini game,
         # where you have to click the icon to start the main game.
-        self.icon_rect = self.icon_rect.move(10, 0)
+        self.rect.move_ip(20 * self.move_right, 0)
+        # The icon run repeatedly between left and right
+        if self.rect.right > WindowSettings.width or self.rect.left < 0:
+            self.move_right *= -1
+            self.rect.move_ip(0, self.move_down * 75)
+            self.image = pygame.transform.flip(self.image, flip_x=True, flip_y=False)
+
+        if self.rect.bottom > WindowSettings.height or self.rect.top < 0:
+            self.move_down *= -1
+            self.rect.move_ip(0, self.move_down * 75)
+            self.image = pygame.transform.flip(self.image, flip_x=False, flip_y=True)
+
         # Check if player clicks the icon, if so, GOTO first scene.
         mouse = pygame.mouse
-        if mouse.get_pressed()[0] and self.icon_rect.collidepoint(mouse.get_pos()):
+        if mouse.get_pressed()[0] and self.rect.collidepoint(mouse.get_pos()):
             EventSystem.fire_switch_event(1)
 
     def render(self):
@@ -231,7 +254,10 @@ class MainMenuScene(Scene):
         background_color = (0, 0, 0)
         self.window.fill(background_color)
         # Render the character
-        self.window.blit(self.player_image, self.icon_rect)
+        # Handle animation
+        self.frame = (self.frame + 1) % len(self.images)
+        self.image = self.images[self.frame]
+        self.window.blit(self.image, self.rect)
 
 
 class SafeRoomScene(Scene):
@@ -241,10 +267,6 @@ class SafeRoomScene(Scene):
         # Init tile map
         tile_map = Maps.gen_safe_room_map()
         self.tile_map = generator.generate(tile_map, scene=self)
-        print("DD")
-
-        print(self.tile_map.get_corners())
-        print("DD")
 
         # Init portals
         generator.generate(Portal(123, 123, "Mob Room"), scene=self)
@@ -254,7 +276,7 @@ class SafeRoomScene(Scene):
         self.obstacles = Maps.gen_safe_room_obstacles(rects_to_avoid)
         for obstacle in self.obstacles:
             generator.generate(obstacle, scene=self)
-        
+
         # Init walls
         self.walls = Maps.gen_walls(self.tile_map.get_corners())
         for wall in self.walls:
@@ -312,7 +334,6 @@ class MobRoomScene(Scene):
         self.window.fill(background_color)
         # Render renderable objects
         super().render()
-
 
 
 class ToolRoomScence(Scene):

@@ -56,11 +56,13 @@ class GameManager:
             self.flush_scene(self.get_scene_index(GOTO))
         elif isinstance(GOTO, int):
             if 0 <= GOTO < len(self.scenes):
+                # Private scene instance
                 self.scene: Scene = self.scenes[GOTO]
+                # Global scene name
+                SceneManager.current_scene = self.scene.name
                 self.scene.start()
                 self.game_state = GameState.GAME_PLAY
                 pygame.display.set_caption(f"{WindowSettings.name} - {self.scene.name}")
-                SceneManager.current_scene = self.scene.name
             else:
                 raise IndexError(f"Scene index: {GOTO} out of range")
 
