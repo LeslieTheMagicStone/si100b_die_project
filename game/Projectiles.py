@@ -29,7 +29,9 @@ class Projectile(pygame.sprite.Sprite, MonoBehavior, Renderable, Collidable):
 
 
 class Bullet(Projectile):
-    def __init__(self, x, y, velocity, damage=ProjectileSettings.bulletDamage) -> None:
+    def __init__(
+        self, x, y, velocity, damage=ProjectileSettings.bulletDamage, attribute=0
+    ) -> None:
         super().__init__(x, y)
         self.need_collision_list = True
 
@@ -42,6 +44,7 @@ class Bullet(Projectile):
 
         self.velocity = velocity
         self.damage = damage
+        self.attribute = attribute
 
     def update(self):
         super().update()
@@ -50,7 +53,7 @@ class Bullet(Projectile):
         for other in self.collisions_enter:
             if other.is_rigid and other.layer != "Player":
                 EventSystem.fire_destroy_event(self)
-                if other.layer=="Default":
+                if other.layer == "Default":
                     EventSystem.fire_hit_event(0, self.rect.center)
 
     def draw(self, window: pygame.Surface, dx=0, dy=0):
