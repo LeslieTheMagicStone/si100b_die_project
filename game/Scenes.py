@@ -324,6 +324,9 @@ class MobRoomScene(Scene):
         for wall in self.walls:
             generator.generate(wall, scene=self)
 
+        # Init monsters
+        monster_count = 5
+
     def start(self):
         super().start()
         self.player.reset_pos()

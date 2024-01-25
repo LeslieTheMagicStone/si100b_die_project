@@ -124,6 +124,8 @@ class GamePath:
         # 8 frames for a single loop of animation looks much better.
     ]
     monster = r".\assets\npc\monster\1.png"
+    iceMonster = r".\assets\npc\monster\ice_small_rival.png"
+    fireMonster = r".\assets\npc\monster\fire_small_rival.png"
     boss = r".\assets\npc\boss.png"
 
     groundTiles = [
