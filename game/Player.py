@@ -59,6 +59,8 @@ class Player(
         self.fire_cd = 0.5
         self.fire_timer = 0
         self.bullet_type = 0
+        self.bullet_causality = 0
+        self.tools_flag = 0
 
     def reset_pos(self, x=WindowSettings.width // 2, y=WindowSettings.height // 2):
         self.rect.center = (x, y)
@@ -121,6 +123,11 @@ class Player(
         if pygame.K_u in Input.key_down.keys() and Input.key_down[pygame.K_u]:
             self.bullet_type = (self.bullet_type + 1) % 2
 
+    def handle_tools(self):
+        if pygame.K_j in Input.key_down.keys() and Input.key_down[pygame.K_j]:
+            if self.tools_flag == 1:
+                self.bullet_causality = (self.bullet_causality + 1) % 3
+
     def handle_fire(self):
         if self.fire_timer > 0:
             self.fire_timer -= Time.delta_time
@@ -144,7 +151,12 @@ class Player(
                 Math.normalize((dx, dy)), ProjectileSettings.bulletSpeed
             )
             bullet = generator.generate(
-                Bullet(self.rect.centerx, self.rect.centery, bullet_velocity)
+                Bullet(
+                    self.rect.centerx,
+                    self.rect.centery,
+                    bullet_velocity,
+                    attribute=self.bullet_causality,
+                )
             )
 
         elif ((dx, dy) != (0, 0)) and self.bullet_type == 1:
@@ -152,7 +164,12 @@ class Player(
                 Math.normalize((dx, dy)), ProjectileSettings.bulletSpeed / 2
             )
             bullet = generator.generate(
-                Big_bullet(self.rect.centerx, self.rect.centery, bullet_velocity)
+                Big_bullet(
+                    self.rect.centerx,
+                    self.rect.centery,
+                    bullet_velocity,
+                    attribute=self.bullet_causality,
+                )
             )
 
             self.fire_timer = self.fire_cd
@@ -197,5 +214,3 @@ class Player(
         )  # tiny offset to look more realistic
         image_pos_y = self.rect.centery - self.image.get_height() // 2
         window.blit(self.image, (image_pos_x + dx, image_pos_y + dy))
-    
-    
