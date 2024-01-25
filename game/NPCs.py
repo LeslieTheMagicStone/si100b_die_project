@@ -35,22 +35,6 @@ class NPC(pygame.sprite.Sprite, Collidable, Renderable, MonoBehavior):
         window.blit(self.image, self.rect.move(dx, dy))
 
 
-"""DialogNPC就是道具"""
-
-
-class DialogNPC(NPC):
-    def __init__(self, x, y, name, dialog, player_rect: pygame.Rect):
-        super().__init__()
-        self.image = pygame.image.load(GamePath.monster)
-        self.image = pygame.transform.scale(
-            self.image, (NPCSettings.npcWidth, NPCSettings.npcHeight)
-        )
-        self.rect = self.image.get_rect()
-        self.rect.center = (x, y)
-
-        self.player_rect = player_rect
-
-
 class Monster(NPC, Damageable):
     def __init__(
         self,
