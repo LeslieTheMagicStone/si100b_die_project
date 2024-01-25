@@ -99,22 +99,23 @@ class Player(
         self.anim_timer -= Time.delta_time
 
     def handle_movement(self):
+
         keys = pygame.key.get_pressed()
 
         dx = dy = 0
 
-        if keys[pygame.K_w]:
+        if Input.get_key(pygame.K_w):
             dy -= 1
-        if keys[pygame.K_s]:
+        if Input.get_key(pygame.K_s):
             dy += 1
-        if keys[pygame.K_a]:
+        if Input.get_key(pygame.K_a):
             dx -= 1
-        if keys[pygame.K_d]:
+        if Input.get_key(pygame.K_d):
             dx += 1
 
         velocity = Math.scale(Math.normalize((dx, dy)), self.speed)
 
-        if keys[pygame.K_LSHIFT]:
+        if Input.get_key(pygame.K_LSHIFT):
             velocity = Math.scale(velocity, 2)
 
         self.velocity = velocity
@@ -137,13 +138,13 @@ class Player(
 
         dx = dy = 0
 
-        if keys[pygame.K_UP]:
+        if Input.get_key(pygame.K_UP):
             dy -= 1
-        if keys[pygame.K_DOWN]:
+        if Input.get_key(pygame.K_DOWN):
             dy += 1
-        if keys[pygame.K_LEFT]:
+        if Input.get_key(pygame.K_LEFT):
             dx -= 1
-        if keys[pygame.K_RIGHT]:
+        if Input.get_key(pygame.K_RIGHT):
             dx += 1
 
         if ((dx, dy) != (0, 0)) and self.bullet_type == 0:

@@ -1,6 +1,9 @@
 # -*- coding:utf-8 -*-
 
 import pygame
+from Projectiles import RenderIndex
+from Settings import RenderIndex
+from UI import RenderIndex
 import generator
 
 from Settings import *
@@ -26,16 +29,24 @@ class NPC(pygame.sprite.Sprite, Collidable, Renderable, MonoBehavior):
     def update(self):
         raise NotImplementedError
 
-    def reset_talkCD(self):
-        ##### Your Code Here ↓ #####
-        pass
-        ##### Your Code Here ↑ #####
-
     def draw(self, window: pygame.Surface, dx=0, dy=0):
         window.blit(self.image, self.rect.move(dx, dy))
 
 
-class Monster(NPC, Damageable):
+class DialogNPC(NPC):
+    def __init__(self, x, y, name, text, render_index=RenderIndex.npc):
+        super().__init__(x, y, name, render_index)
+
+        # Image and rect related
+        self.image = pygame.image.load(GamePath.npc)
+        self.image = pygame.transform.scale(
+            self.image, (NPCSettings.npcWidth, NPCSettings.npcHeight)
+        )
+        # The npc's dialog
+        self.text = text
+
+
+class Monster(NPC, Damageable):#
     def __init__(
         self,
         player_rect: pygame.Rect,
