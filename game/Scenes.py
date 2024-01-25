@@ -315,6 +315,8 @@ class MobRoomScene(Scene):
         tile_map = Maps.gen_mob_room_map()
         self.tile_map = generator.generate(tile_map, scene=self)
 
+        generator.generate(Portal(150, 150, "Tool Room"), scene=self)
+
         # Init monsters
         monster = Monster(self.player.rect, 100, 100)
         generator.generate(monster, scene=self)
@@ -355,4 +357,33 @@ class MobRoomScene(Scene):
 
 
 class ToolRoomScence(Scene):
-    """append_object(self.dialogNPC)"""
+    def __init__(self, data: SceneTransferData):
+        super().__init__(data)
+
+        tile_map = Maps.gen_Tool_room_map()
+        self.tile_map = generator.generate(tile_map, scene=self)
+
+        face_mark = Tools(self.player.rect, 100, 100)
+        generator.generate(face_mark, scene=self)
+
+        self.walls = Maps.gen_walls(self.tile_map.get_corners())
+        for wall in self.walls:
+            generator.generate(wall, scene=self)
+
+    def start(self):
+        super().start()
+        self.player.reset_pos()
+
+        EffectManager.generate(
+            "teleport", self.player.rect.centerx, self.player.rect.centery - 20
+        )
+
+    def update(self):
+        super().update()
+
+    def render(self):
+        # Render background with black
+        background_color = (0, 0, 0)
+        self.window.fill(background_color)
+        # Render renderable objects
+        super().render()
