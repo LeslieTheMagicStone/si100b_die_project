@@ -363,7 +363,7 @@ class ToolRoomScence(Scene):
         tile_map = Maps.gen_Tool_room_map()
         self.tile_map = generator.generate(tile_map, scene=self)
 
-        face_mark = Tools(self.player.rect, 100, 100)
+        face_mark = Tools(100, 100)
         generator.generate(face_mark, scene=self)
 
         self.walls = Maps.gen_walls(self.tile_map.get_corners())

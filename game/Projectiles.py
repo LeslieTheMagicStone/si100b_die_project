@@ -35,11 +35,11 @@ class Tools(Projectile):
 
         self.image = pygame.image.load(GamePath.player[0])
         self.image = pygame.transform.scale(
-            self.image, (SceneSettings.tileWidth // 4, SceneSettings.tileHeight // 4)
+            self.image, (SceneSettings.tileWidth * 2, SceneSettings.tileHeight * 2)
         )
         self.rect = self.image.get_rect()
         self.rect.center = (x, y)
-        self.velocity = 0
+        self.velocity = (0, 0)
 
     def update(self):
         super().update()
@@ -55,7 +55,12 @@ class Tools(Projectile):
 
 class Bullet(Projectile):
     def __init__(
-        self, x, y, velocity, damage=ProjectileSettings.bulletDamage, attribute=Causality.NORMAL
+        self,
+        x,
+        y,
+        velocity,
+        damage=ProjectileSettings.bulletDamage,
+        attribute=Causality.NORMAL,
     ) -> None:
         super().__init__(x, y)
         self.need_collision_list = True
@@ -88,7 +93,12 @@ class Bullet(Projectile):
 
 class Big_bullet(Bullet):
     def __init__(
-        self, x, y, velocity, damage=ProjectileSettings.bulletDamage * 4
+        self,
+        x,
+        y,
+        velocity,
+        damage=ProjectileSettings.bulletDamage * 4,
+        attribute=Causality.NORMAL,
     ) -> None:
         super().__init__(x, y, velocity, damage)
 

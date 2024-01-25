@@ -190,8 +190,6 @@ class Player(
             if isinstance(enter, Portal):
                 if enter.GOTO != SceneManager.current_scene:
                     EventSystem.fire_switch_event(enter.GOTO)
-            if isinstance(enter, DialogNPC):
-                EventSystem.fire_dialog_event("接触DialogNPC之后Event")
 
         for stay in self.collisions_stay:
             if isinstance(stay, Monster):

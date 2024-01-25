@@ -31,6 +31,7 @@ class GameManager:
         self.scenes.append(MainMenuScene(self.pack_scene_transfer_data("Main Menu")))
         self.scenes.append(SafeRoomScene(self.pack_scene_transfer_data("Safe Room")))
         self.scenes.append(MobRoomScene(self.pack_scene_transfer_data("Mob Room")))
+        self.scenes.append(ToolRoomScence(self.pack_scene_transfer_data("Tool Room")))
 
         # Default scene is main menu
         self.flush_scene("Main Menu")
