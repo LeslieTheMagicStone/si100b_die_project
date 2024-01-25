@@ -27,14 +27,14 @@ class GameManager:
         self.player.reset_pos()
 
         # Initialize scenes
-        self.scenes: List[Scene] = []
+        self.scenes: list[Scene] = []
         self.scenes.append(MainMenuScene(self.pack_scene_transfer_data("Main Menu")))
         self.scenes.append(SafeRoomScene(self.pack_scene_transfer_data("Safe Room")))
         self.scenes.append(MobRoomScene(self.pack_scene_transfer_data("Mob Room")))
         self.scenes.append(ToolRoomScence(self.pack_scene_transfer_data("Tool Room")))
 
         # Default scene is main menu
-        self.flush_scene("Main Menu")
+        self.flush_scene("Tool Room")
 
     def game_reset(self):
         # TODO reset the scenes
@@ -88,19 +88,21 @@ class GameManager:
     def handle_event(self):
         # Get events of current frame
         events = pygame.event.get()
+        # Update key_down
+        for key in Input.key_down:
+            Input.key_down[key] = False
 
         for event in events:
             if event.type == pygame.QUIT:
                 pygame.quit()
                 # No need to sys.exit(), right?
             elif event.type == pygame.KEYDOWN:
-                # Check if the key is already down
-                if event.key not in Input.key_down or not Input.key_down[event.key]:
-                    # This is the first frame of the key down event
-                    Input.key_down[event.key] = True
+                Input.key_down[event.key] = True
+                Input.key_pressed[event.key] = True
             elif event.type == pygame.KEYUP:
                 # Reset the key state when the key is released
                 Input.key_down[event.key] = False
+                Input.key_pressed[event.key] = False
             elif event.type == GameEvent.EVENT_RESTART:
                 self.game_reset()
             elif event.type == GameEvent.EVENT_SWITCH:
@@ -113,7 +115,7 @@ class GameManager:
                     scene = self.scene
                 scene.append_object(event.message[0])
             elif event.type == GameEvent.EVENT_DIALOG:
-                self.scene.show_dialog_box(event.message)
+                self.scene.show_dialog_box(event.portrait, event.text)
             elif event.type == GameEvent.EVENT_DESTROY:
                 # Append object to the scene object list
                 scene = event.message[1]

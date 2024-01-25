@@ -55,7 +55,7 @@ class DialogSettings:
     boxStartX = WindowSettings.width // 4  # Coordinate X of the box
     boxStartY = WindowSettings.height // 3 * 2 + 20  # Coordinate Y of the box
 
-    textSize = 48  # Default font size
+    textSize = 32  # Default font size
     textStartX = (
         WindowSettings.width // 4 + 10
     )  # Coordinate X of the first line of dialog
@@ -109,6 +109,9 @@ class ShopSettings:
 
 
 class GamePath:
+    # Font path
+    youYuan = r".\assets\fonts\SIMYOU.TTF"
+
     # Window related path
     menu = r".\assets\background\menu.png"
     wild = r".\assets\background\wild.png"

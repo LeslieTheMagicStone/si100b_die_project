@@ -23,9 +23,11 @@ class Projectile(pygame.sprite.Sprite, MonoBehavior, Renderable, Collidable):
         self.life_time = 5
 
     def update(self):
-        self.life_time -= Time.delta_time
-        if self.life_time < 0:
-            EventSystem.fire_destroy_event(self)
+        if self.life_time != -1:
+            self.life_time -= Time.delta_time
+            if self.life_time < 0:
+                EventSystem.fire_destroy_event(self)
+        
 
 
 class Tools(Projectile):
@@ -41,13 +43,18 @@ class Tools(Projectile):
         self.rect.center = (x, y)
         self.velocity = (0, 0)
 
+        # Life time is infinity
+        self.life_time = -1
+
     def update(self):
         super().update()
 
         for other in self.collisions_enter:
             if other.layer == "Player":
                 EventSystem.fire_destroy_event(self)
-                EventSystem.fire_dialog_event(self, "这是一个古老的面具，上面蕴藏着神秘的力量，可以让玩家拥有转换能力")
+                EventSystem.fire_dialog_event(
+                    self.image, "这是一个古老的面具，\n上面蕴藏着神秘的力量，\n可以让玩家拥有转换能力"
+                )
 
     def draw(self, window: pygame.Surface, dx=0, dy=0):
         window.blit(self.image, self.rect.move(dx, dy))

@@ -1,9 +1,6 @@
 from Player import *
 import pygame
 
-from PopUpBox import *
-
-
 class SceneTransferData:
     def __init__(
         self,

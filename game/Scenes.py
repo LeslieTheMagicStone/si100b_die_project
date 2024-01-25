@@ -9,7 +9,6 @@ import generator
 
 from Settings import *
 from NPCs import *
-from PopUpBox import *
 from Portal import *
 from BgmPlayer import *
 from Player import *
@@ -41,6 +40,7 @@ class Scene:
         # Initialize a global dialog box
         self.dialog_box = DialogBox()
         self.hide_dialog_box()
+        self.append_object(self.dialog_box)
 
         # Initialize game camera
         self.camera = pygame.Rect((0, 0), self.window.get_size())
@@ -71,6 +71,18 @@ class Scene:
 
         # Update game camera at last to assure smooth cam movement
         self.update_camera(self.player)
+
+        # Update UI input
+        self.update_ui_input()
+
+    def update_ui_input(self):
+        if Input.get_key_down(pygame.K_RETURN):
+            if self.dialog_box.is_active:
+                self.dialog_box.next_page()
+
+        if Input.get_key_down(pygame.K_ESCAPE):
+            if self.dialog_box.is_active:
+                self.hide_dialog_box()
 
     # Update the collision list of the collidables needing it
     def update_collision_list(self):
@@ -205,11 +217,8 @@ class Scene:
         for renderable in self._renderables:
             renderable.draw(self.window, offset[0], offset[1])
 
-    def show_dialog_box(self, message):
-        npc = message[0]
-        text = message[1]
-
-        self.dialog_box.set_npc(npc)
+    def show_dialog_box(self, portrait, text):
+        self.dialog_box.set_portrait(portrait)
         self.dialog_box.set_text(text)
         self.dialog_box.set_active(True)
 
@@ -315,8 +324,6 @@ class MobRoomScene(Scene):
         tile_map = Maps.gen_mob_room_map()
         self.tile_map = generator.generate(tile_map, scene=self)
 
-        generator.generate(Portal(150, 150, "Tool Room"), scene=self)
-
         # Init monsters
         monster = Monster(self.player.rect, 100, 100)
         generator.generate(monster, scene=self)
@@ -347,6 +354,13 @@ class MobRoomScene(Scene):
 
     def update(self):
         super().update()
+
+        for c in self._collidables:
+            if isinstance(c,Monster):
+                break
+        else:
+            if len(self._portals) == 0:
+                generator.generate(Portal(150, 150, "Tool Room"), scene=self)
 
     def render(self):
         # Render background with black
