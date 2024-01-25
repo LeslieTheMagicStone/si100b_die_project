@@ -59,7 +59,7 @@ class Player(
         self.fire_cd = 0.5
         self.fire_timer = 0
         self.bullet_type = 0
-        self.bullet_causality = 0
+        self.bullet_causality = Causality.NORMAL
         self.tools_flag = 0
 
     def reset_pos(self, x=WindowSettings.width // 2, y=WindowSettings.height // 2):

@@ -5,7 +5,7 @@ import pygame
 
 
 class WindowSettings:
-    name = "完蛋，被985包围了！"
+    name = "完蛋，我被coke老师包围了！"
     width = 1280
     height = 720
     outdoorScale = 1.5  # A necessary scale to allow camera movement in outdoor scenes
@@ -222,6 +222,12 @@ class RenderIndex:
 class ProjectileSettings:
     bulletSpeed = 20
     bulletDamage = 2
+
+
+class Causality(Enum):
+    NORMAL = 0
+    ICE = 1
+    FIRE = 2
 
 
 class GameState(Enum):

@@ -325,7 +325,14 @@ class MobRoomScene(Scene):
             generator.generate(wall, scene=self)
 
         # Init monsters
-        monster_count = 5
+        monster_count = randint(5, 10)
+        for i in range(monster_count):
+            [(left, top), (right, bottom)] = self.tile_map.get_corners()
+            x = randint(left + 50, right - 50)
+            y = randint(top + 50, bottom - 50)
+            causality = Causality(randint(1, 2))
+            monster = Monster(self.player.rect, x, y, causality=causality)
+            generator.generate(monster, scene=self)
 
     def start(self):
         super().start()

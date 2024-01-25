@@ -62,7 +62,7 @@ class Monster(NPC, Damageable):
         attack=3,
         defence=1,
         money=15,
-        
+        causality=Causality.ICE,
     ):
         NPC.__init__(self, x, y, name="Monster", render_index=RenderIndex.monster)
         Damageable.__init__(self)
@@ -72,7 +72,10 @@ class Monster(NPC, Damageable):
         # Need collision list to detect hurt
         self.need_collision_list = True
         # Image and rect related
-        self.image = pygame.image.load(GamePath.monster)
+        if causality == Causality.ICE:
+            self.image = pygame.image.load(GamePath.iceMonster)
+        elif causality == Causality.FIRE:
+            self.image = pygame.image.load(GamePath.fireMonster)
         self.image = pygame.transform.scale(
             self.image, (NPCSettings.npcWidth, NPCSettings.npcHeight)
         )
@@ -86,6 +89,7 @@ class Monster(NPC, Damageable):
         self.attack = attack
         self.defence = defence
         self.money = money
+        self.causality = causality
         # Combat related
         self.is_dead = False
         self.cur_hp = self.max_hp
@@ -142,6 +146,7 @@ class Monster(NPC, Damageable):
 
     def draw(self, window: pygame.Surface, dx=0, dy=0):
         window.blit(self.image, self.rect.move(dx, dy))
+
 
 class Boss(pygame.sprite.Sprite):
     def __init__(self, x, y):

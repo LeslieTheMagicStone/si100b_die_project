@@ -30,7 +30,7 @@ class Projectile(pygame.sprite.Sprite, MonoBehavior, Renderable, Collidable):
 
 class Bullet(Projectile):
     def __init__(
-        self, x, y, velocity, damage=ProjectileSettings.bulletDamage, attribute=0
+        self, x, y, velocity, damage=ProjectileSettings.bulletDamage, attribute=Causality.NORMAL
     ) -> None:
         super().__init__(x, y)
         self.need_collision_list = True
