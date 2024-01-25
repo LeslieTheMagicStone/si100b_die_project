@@ -46,6 +46,7 @@ class Monster(NPC, Damageable):
         attack=3,
         defence=1,
         money=15,
+        
     ):
         NPC.__init__(self, x, y, name="Monster", render_index=RenderIndex.monster)
         Damageable.__init__(self)
@@ -125,7 +126,6 @@ class Monster(NPC, Damageable):
 
     def draw(self, window: pygame.Surface, dx=0, dy=0):
         window.blit(self.image, self.rect.move(dx, dy))
-
 
 class Boss(pygame.sprite.Sprite):
     def __init__(self, x, y):

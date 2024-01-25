@@ -77,6 +77,7 @@ class Bullet(Projectile):
         # Collide rigid ones then destroy it self
         for other in self.collisions_enter:
             if other.is_rigid and other.layer != "Player":
+                self.set_active(False)
                 EventSystem.fire_destroy_event(self)
                 if other.layer == "Default":
                     EventSystem.fire_hit_event(0, self.rect.center)
