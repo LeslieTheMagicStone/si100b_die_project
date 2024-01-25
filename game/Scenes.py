@@ -356,9 +356,3 @@ class MobRoomScene(Scene):
 
 class ToolRoomScence(Scene):
     """append_object(self.dialogNPC)"""
-
-    def start(self):
-        super().start()
-        self.player.reset_pos()
-
-        self.dialogNPC = DialogNPC(self.player)

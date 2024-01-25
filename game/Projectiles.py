@@ -28,6 +28,31 @@ class Projectile(pygame.sprite.Sprite, MonoBehavior, Renderable, Collidable):
             EventSystem.fire_destroy_event(self)
 
 
+class Tools(Projectile):
+    def __init__(self, x, y) -> None:
+        super().__init__(x, y)
+        self.need_collision_list = True
+
+        self.image = pygame.image.load(GamePath.player[0])
+        self.image = pygame.transform.scale(
+            self.image, (SceneSettings.tileWidth // 4, SceneSettings.tileHeight // 4)
+        )
+        self.rect = self.image.get_rect()
+        self.rect.center = (x, y)
+        self.velocity = 0
+
+    def update(self):
+        super().update()
+
+        for other in self.collisions_enter:
+            if other.layer == "Player":
+                EventSystem.fire_destroy_event(self)
+                EventSystem.fire_dialog_event(self, "这是一个古老的面具，上面蕴藏着神秘的力量，可以让玩家拥有转换能力")
+
+    def draw(self, window: pygame.Surface, dx=0, dy=0):
+        window.blit(self.image, self.rect.move(dx, dy))
+
+
 class Bullet(Projectile):
     def __init__(
         self, x, y, velocity, damage=ProjectileSettings.bulletDamage, attribute=Causality.NORMAL
