@@ -34,6 +34,8 @@ class Collidable:
     def __init__(
         self, need_collision_list=False, is_rigid=False, rect: pygame.Rect = None
     ):
+        # Layer is used to avoid certain collisions
+        self.layer = "Default"
         # All collidables should have rect
         self.rect: pygame.Rect = rect
         # With this enabled, it will act like block

@@ -93,7 +93,7 @@ class GameManager:
                 pygame.quit()
                 # No need to sys.exit(), right?
             elif event.type == pygame.KEYDOWN:
-            # Check if the key is already down
+                # Check if the key is already down
                 if event.key not in Input.key_down or not Input.key_down[event.key]:
                     # This is the first frame of the key down event
                     Input.key_down[event.key] = True
@@ -124,7 +124,8 @@ class GameManager:
                 # Generate smoke animation
                 damage = event.message[0]
                 position = event.message[1]
-                EffectManager.generate(f"text: {damage}", position[0], position[1])
+                if damage > 0:
+                    EffectManager.generate(f"text: {damage}", position[0], position[1])
                 EffectManager.generate("smoke", position[0], position[1])
 
     def pack_scene_transfer_data(self, name) -> SceneTransferData:

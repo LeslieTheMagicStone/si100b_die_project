@@ -28,6 +28,8 @@ class Player(
         Renderable.__init__(self, render_index=RenderIndex.player)
         Buffable.__init__(self)
 
+        # Collision layer
+        self.layer = "Player"
         # Animation related
         self.images = [
             pygame.transform.scale(
@@ -71,15 +73,14 @@ class Player(
 
     def update_buffs(self):
         to_be_deleted = []
-        for (buff, buff_time) in self.Buff_state.items():
+        for buff, buff_time in self.Buff_state.items():
             if buff_time > 0:
                 self.Buff_state[buff] -= Time.delta_time
-            elif buff_time <0 and buff_time!=-1:
+            elif buff_time < 0 and buff_time != -1:
                 to_be_deleted.append(buff)
 
         for buff in to_be_deleted:
             self.delete_Buff(buff)
-            
 
     def handle_animation(self):
         # Only need to play run animation when running
@@ -181,6 +182,14 @@ class Player(
                 EventSystem.fire_hurt_event(damage)
 
     def draw(self, window: pygame.Surface, dx=0, dy=0):
+        # Handle invulnerable animation
+        if "Invulnerable" in self.Buff_state.keys():
+            time = self.Buff_state["Invulnerable"]
+            alpha = (2 - int(time * 100) % 2) * 127
+            self.image.set_alpha(alpha)
+        else:
+            self.image.set_alpha(255)
+
         # Calculate top-left corner of the picture separately
         # because that of the rect has been changed when scaling
         image_pos_x = (
@@ -188,3 +197,5 @@ class Player(
         )  # tiny offset to look more realistic
         image_pos_y = self.rect.centery - self.image.get_height() // 2
         window.blit(self.image, (image_pos_x + dx, image_pos_y + dy))
+    
+    

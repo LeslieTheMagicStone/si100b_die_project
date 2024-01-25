@@ -218,7 +218,7 @@ class RenderIndex:
 
 
 class ProjectileSettings:
-    bulletSpeed = 10
+    bulletSpeed = 20
     bulletDamage = 2
 
 

@@ -77,7 +77,7 @@ class Scene:
         # Assume they all move without bumping into others
         for c in self._collidables:
             (dx, dy) = c.velocity
-            c.rect.move_ip(dx, dy)
+            c.rect.move_ip(2 * dx, 2 * dy)
 
         for c in self._collidables:
             # Only need to update those collidables which need collision list
@@ -113,7 +113,7 @@ class Scene:
         # Don't forget to set the position back to original
         for c in self._collidables:
             (dx, dy) = c.velocity
-            c.rect.move_ip(-dx, -dy)
+            c.rect.move_ip(-2 * dx, -2 * dy)
 
     # Call start/update functions of mono behaviours
     def update_mono_behaviors(self):
@@ -171,6 +171,9 @@ class Scene:
 
     # Remove object from scene object list
     def remove_object(self, obj):
+        if obj not in self._objects:
+            return
+
         self._objects.remove(obj)
 
         if isinstance(obj, Collidable):

@@ -3,6 +3,8 @@ import pygame
 from Settings import *
 from Math import *
 from Attributes import *
+from globals import Time
+from EventSystem import *
 
 
 class Projectile(pygame.sprite.Sprite, MonoBehavior, Renderable, Collidable):
@@ -17,14 +19,23 @@ class Projectile(pygame.sprite.Sprite, MonoBehavior, Renderable, Collidable):
         Renderable.__init__(self, render_index=render_index)
         Collidable.__init__(self)
 
+        # All projectiles have a life time and will be destroyed after that
+        self.life_time = 5
+
+    def update(self):
+        self.life_time -= Time.delta_time
+        if self.life_time < 0:
+            EventSystem.fire_destroy_event(self)
+
 
 class Bullet(Projectile):
     def __init__(self, x, y, velocity, damage=ProjectileSettings.bulletDamage) -> None:
         super().__init__(x, y)
+        self.need_collision_list = True
 
         self.image = pygame.image.load(GamePath.player[0])
         self.image = pygame.transform.scale(
-            self.image, (SceneSettings.tileWidth // 4, SceneSettings.tileHeight / 4)
+            self.image, (SceneSettings.tileWidth // 4, SceneSettings.tileHeight // 4)
         )
         self.rect = self.image.get_rect()
         self.rect.center = (x, y)
@@ -32,11 +43,18 @@ class Bullet(Projectile):
         self.velocity = velocity
         self.damage = damage
 
+    def update(self):
+        super().update()
+
+        # Collide rigid ones then destroy it self
+        for other in self.collisions_enter:
+            if other.is_rigid and other.layer != "Player":
+                EventSystem.fire_destroy_event(self)
+                if other.layer=="Default":
+                    EventSystem.fire_hit_event(0, self.rect.center)
+
     def draw(self, window: pygame.Surface, dx=0, dy=0):
         window.blit(self.image, self.rect.move(dx, dy))
-
-
-"""此处NPC可以是monster也可以是player,当player发出时,锁定最近的敌人。(计划书中没有player发出的情况,有时间再添加)"""
 
 
 class Big_bullet(Bullet):
@@ -47,7 +65,7 @@ class Big_bullet(Bullet):
 
         self.image = pygame.image.load(GamePath.player[0])
         self.image = pygame.transform.scale(
-            self.image, (SceneSettings.tileWidth / 2, SceneSettings.tileHeight / 2)
+            self.image, (SceneSettings.tileWidth // 2, SceneSettings.tileHeight // 2)
         )
         self.rect = self.image.get_rect()
         self.rect.center = (x, y)

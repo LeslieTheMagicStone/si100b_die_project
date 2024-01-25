@@ -66,6 +66,8 @@ class Monster(NPC, Damageable):
         NPC.__init__(self, x, y, name="Monster", render_index=RenderIndex.monster)
         Damageable.__init__(self)
 
+        # Collision Layer is enemy
+        self.layer = "Enemy"
         # Need collision list to detect hurt
         self.need_collision_list = True
         # Image and rect related
@@ -106,10 +108,7 @@ class Monster(NPC, Damageable):
         self.velocity = (movement[0], movement[1])
 
     def handle_damage(self, damage):
-        if self.is_invulnerable:
-            return 0
-
-        damage = max(0, damage - self.defence)
+        damage = max(1, damage - self.defence)
         self.cur_hp = max(0, self.cur_hp - damage)
 
         if self.cur_hp == 0:
