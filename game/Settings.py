@@ -34,6 +34,7 @@ class NPCSettings:
     npcSpeed = 1
     npcWidth = 60
     npcHeight = 60
+    npcTriggerRadius = 100
 
 
 class NPCType(Enum):
@@ -131,6 +132,18 @@ class GamePath:
     fireMonster = r".\assets\npc\monster\fire_small_rival.png"
     boss = r".\assets\npc\boss.png"
 
+    normal_bullet = [
+        r".\assets\bullet\normal_bullet.png",
+        r".\assets\bullet\ice_normal_bullet.png",
+        r".\assets\bullet\fire_normal_bullet.png",
+    ]
+
+    big_bullet = [
+        r".\assets\bullet\big_bullet.png",
+        r".\assets\bullet\ice_big_bullet.png",
+        r".\assets\bullet\fire_big_bullet.png",
+    ]
+
     groundTiles = [
         r".\assets\tiles\ground1.png",
         r".\assets\tiles\ground2.png",
@@ -225,6 +238,8 @@ class RenderIndex:
 class ProjectileSettings:
     bulletSpeed = 20
     bulletDamage = 2
+    bigBulletWidth = 40
+    bigBulletHeight = 10
 
 
 class Causality(Enum):
@@ -234,16 +249,13 @@ class Causality(Enum):
 
 
 class GameState(Enum):
-    GAME_MAIN_MENU = 1
-    GAME_TRANSITION = 2
-    GAME_OVER = 3
-    GAME_WIN = 4
-    GAME_PAUSE = 5
-    GAME_PLAY = 6
+    NORMAL = 0
+    DIALOG = 1
 
 
 class GameEvent:
     EVENT_BATTLE = pygame.USEREVENT + 1
+    # Starts a
     EVENT_DIALOG = pygame.USEREVENT + 2
     # Go to another scene
     EVENT_SWITCH = pygame.USEREVENT + 3

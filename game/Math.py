@@ -1,3 +1,6 @@
+import math
+
+
 class Math:
     @classmethod
     def same_type_with_input(cls, value, input):
@@ -65,8 +68,15 @@ class Math:
 
         ans = [vector[1], -vector[0]]
         return Math.same_type_with_input(ans, vector)
-    
+
     @classmethod
     def ortho_normal(cls, vector):
         ans = Math.normalize(Math.orthogonal(vector))
         return Math.same_type_with_input(ans, vector)
+
+    @classmethod
+    def angle_degrees(cls, vector):
+        if len(vector) != 2:
+            raise ValueError(f"only support 2d angle")
+
+        return math.degrees(math.atan2(vector[0], vector[1]))

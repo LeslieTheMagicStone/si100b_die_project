@@ -12,41 +12,111 @@ from Math import *
 from EventSystem import *
 from Projectiles import *
 from UI import *
+from globals import *
 from random import randint
 
 
 class NPC(pygame.sprite.Sprite, Collidable, Renderable, MonoBehavior):
-    def __init__(self, x, y, name, render_index=RenderIndex.npc):
+    def __init__(
+        self, x, y, name, render_index=RenderIndex.npc, speed=NPCSettings.npcSpeed
+    ):
         # Initialize father classes
         pygame.sprite.Sprite.__init__(self)
         Collidable.__init__(self, is_rigid=True)
         Renderable.__init__(self, render_index)
         MonoBehavior.__init__(self)
 
-        self.image: pygame.Surface = None
-        self.rect: pygame.Rect = None
-
-    def update(self):
-        raise NotImplementedError
-
-    def draw(self, window: pygame.Surface, dx=0, dy=0):
-        window.blit(self.image, self.rect.move(dx, dy))
-
-
-class DialogNPC(NPC):
-    def __init__(self, x, y, name, text, render_index=RenderIndex.npc):
-        super().__init__(x, y, name, render_index)
-
         # Image and rect related
         self.image = pygame.image.load(GamePath.npc)
         self.image = pygame.transform.scale(
             self.image, (NPCSettings.npcWidth, NPCSettings.npcHeight)
         )
+        self.rect = self.image.get_rect()
+        self.rect.center = (x, y)
+
+        self.speed = speed
+        self.name = name
+
+    def update(self):
+        raise NotImplementedError
+
+    def draw(self, window: pygame.Surface, dx=0, dy=0):
+        if self.is_active:
+            window.blit(self.image, self.rect.move(dx, dy))
+
+
+class DialogNPC(NPC):
+    def __init__(
+        self,
+        x,
+        y,
+        name,
+        text,
+        player_rect: pygame.Rect,
+        render_index=RenderIndex.npc,
+        speed=NPCSettings.npcSpeed,
+    ):
+        super().__init__(x, y, name, render_index, speed)
+
         # The npc's dialog
         self.text = text
+        # Save player rect to detect distance
+        self.player_rect = player_rect
+        # If the npc is dialoging
+        self.is_dialoging = False
+        # Moving behavior
+        self.is_walking = True
+        self.behavior_timer = 1
+
+    def start(self):
+        super().start()
+
+        # Init trigger text
+        self.trigger_text = generator.generate(DialogIcon(self.rect, "按Enter对话", dy=20))
+        self.trigger_text.set_active(False)
+        self.name_text = generator.generate(DialogIcon(self.rect, self.name, dy=0))
+        self.name_text.set_active(False)
+
+    def update(self):
+        self.handle_dialog()
+        self.handle_movement()
+
+    def handle_movement(self):
+        if self.is_dialoging:
+            return
+
+        if self.behavior_timer < 0:
+            # If is walking, then stop
+            if self.is_walking:
+                self.behavior_timer = randint(1, 3)
+                self.is_walking = False
+                self.velocity = (0, 0)
+            # If is stopping, then walk
+            else:
+                self.behavior_timer = randint(2, 5)
+                self.is_walking = True
+                self.velocity = Math.scale((randint(0, 1), randint(0, 1)), self.speed)
+        self.behavior_timer -= Time.delta_time
+
+    def handle_dialog(self):
+        distance = Math.distance(self.rect.center, self.player_rect.center)
+        if distance < NPCSettings.npcTriggerRadius and not self.is_dialoging:
+            self.trigger_text.set_active(True)
+            self.name_text.set_active(True)
+            if Input.get_key_down(pygame.K_RETURN):
+                self.is_dialoging = True
+                self.trigger_text.set_active(False)
+                self.name_text.set_active(False)
+                EventSystem.fire_dialog_event(self.image, self.text, self.end_dialog)
+        else:
+            self.trigger_text.set_active(False)
+            self.name_text.set_active(False)
+
+    def end_dialog(self):
+        self.is_dialoging = False
 
 
-class Monster(NPC, Damageable):#
+class Monster(NPC, Damageable):  #
     def __init__(
         self,
         player_rect: pygame.Rect,

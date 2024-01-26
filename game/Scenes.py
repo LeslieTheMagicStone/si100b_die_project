@@ -217,13 +217,14 @@ class Scene:
         for renderable in self._renderables:
             renderable.draw(self.window, offset[0], offset[1])
 
-    def show_dialog_box(self, portrait, text):
+    def show_dialog_box(self, portrait, text, callback):
         self.dialog_box.set_portrait(portrait)
         self.dialog_box.set_text(text)
+        self.dialog_box.set_callback(callback)
         self.dialog_box.set_active(True)
 
     def hide_dialog_box(self):
-        self.dialog_box.set_active(False)
+        self.dialog_box.close()
 
 
 class MainMenuScene(Scene):
@@ -288,8 +289,17 @@ class SafeRoomScene(Scene):
         # Init portals
         generator.generate(Portal(123, 123, "Mob Room"), scene=self)
 
+        # Init npcs
+        self.dialog_npc1 = generator.generate(
+            DialogNPC(100, 100, "阿柴1号", "完蛋，你被coke老师包围了！", self.player.rect), scene=self
+        )
+        self.dialog_npc2 = generator.generate(
+            DialogNPC(200, 200, "阿柴2号", "准备好了吗？，进入传送门，直面coke老师吧", self.player.rect), scene=self
+        )
+        
+
         # Init obstacles
-        rects_to_avoid = [portal.rect for portal in self._portals] + [self.player.rect]
+        rects_to_avoid = [c.rect for c in self._collidables if c.is_rigid] + [p.rect for p in self._portals]
         self.obstacles = Maps.gen_safe_room_obstacles(rects_to_avoid)
         for obstacle in self.obstacles:
             generator.generate(obstacle, scene=self)
@@ -298,6 +308,8 @@ class SafeRoomScene(Scene):
         self.walls = Maps.gen_walls(self.tile_map.get_corners())
         for wall in self.walls:
             generator.generate(wall, scene=self)
+
+        
 
     def start(self):
         super().start()
@@ -356,7 +368,7 @@ class MobRoomScene(Scene):
         super().update()
 
         for c in self._collidables:
-            if isinstance(c,Monster):
+            if isinstance(c, Monster):
                 break
         else:
             if len(self._portals) == 0:

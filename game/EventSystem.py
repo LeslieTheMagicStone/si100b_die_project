@@ -21,9 +21,9 @@ class EventSystem:
         pygame.event.post(generate_event)
 
     @classmethod
-    def fire_dialog_event(cls, portrait, text: str):
+    def fire_dialog_event(cls, portrait, text: str, callback=None):
         generate_event = pygame.event.Event(
-            GameEvent.EVENT_DIALOG, portrait=portrait, text=text
+            GameEvent.EVENT_DIALOG, portrait=portrait, text=text, callback=callback
         )
         pygame.event.post(generate_event)
 

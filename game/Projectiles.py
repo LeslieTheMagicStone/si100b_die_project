@@ -27,7 +27,6 @@ class Projectile(pygame.sprite.Sprite, MonoBehavior, Renderable, Collidable):
             self.life_time -= Time.delta_time
             if self.life_time < 0:
                 EventSystem.fire_destroy_event(self)
-        
 
 
 class Tools(Projectile):
@@ -72,7 +71,7 @@ class Bullet(Projectile):
         super().__init__(x, y)
         self.need_collision_list = True
 
-        self.image = pygame.image.load(GamePath.player[0])
+        self.image = pygame.image.load(GamePath.normal_bullet[attribute.value])
         self.image = pygame.transform.scale(
             self.image, (SceneSettings.tileWidth // 4, SceneSettings.tileHeight // 4)
         )
@@ -109,15 +108,19 @@ class Big_bullet(Bullet):
     ) -> None:
         super().__init__(x, y, velocity, damage)
 
-        self.image = pygame.image.load(GamePath.player[0])
+        self.image = pygame.image.load(GamePath.big_bullet[attribute.value])
         self.image = pygame.transform.scale(
-            self.image, (SceneSettings.tileWidth // 2, SceneSettings.tileHeight // 2)
+            self.image,
+            (ProjectileSettings.bigBulletWidth, ProjectileSettings.bigBulletHeight),
         )
+        self.image = pygame.transform.rotate(self.image, Math.angle_degrees(velocity))
+
         self.rect = self.image.get_rect()
         self.rect.center = (x, y)
 
         self.velocity = velocity
         self.damage = damage
+        self.attribute = attribute
 
     def draw(self, window: pygame.Surface, dx=0, dy=0):
         window.blit(self.image, self.rect.move(dx, dy))

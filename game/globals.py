@@ -1,3 +1,4 @@
+from Settings import GameState
 class Time:
     delta_time = 0
     time = 0
@@ -14,4 +15,7 @@ class Input:
     @classmethod
     def get_key(cls,key):
         return key in cls.key_pressed.keys() and cls.key_pressed[key]
+    
+class CurrentState:
+    state = GameState.NORMAL
     

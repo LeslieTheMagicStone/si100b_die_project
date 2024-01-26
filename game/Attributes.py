@@ -12,7 +12,7 @@ class MonoBehavior:
         pass
 
     def update(self):
-        raise NotImplementedError(f"The updated() method is not implemented in {self}")
+        raise NotImplementedError(f"The update() method is not implemented in {self}")
 
 
 class Renderable:

@@ -62,7 +62,7 @@ class GameManager:
                 # Global scene name
                 SceneManager.current_scene = self.scene.name
                 self.scene.start()
-                self.game_state = GameState.GAME_PLAY
+                CurrentState.state = GameState.NORMAL
                 pygame.display.set_caption(f"{WindowSettings.name} - {self.scene.name}")
             else:
                 raise IndexError(f"Scene index: {GOTO} out of range")
@@ -79,6 +79,9 @@ class GameManager:
         # Wait for delta time between each frame
         self.tick(30)
 
+        # Update key_down
+        for key in Input.key_down:
+            Input.key_down[key] = False
         # Handle event several times to fetch all events
         # (I know it seems dirty, but it works)
         self.handle_events()
@@ -96,9 +99,6 @@ class GameManager:
     def handle_events(self):
         # Get events of current frame
         events = pygame.event.get()
-        # Update key_down
-        for key in Input.key_down:
-            Input.key_down[key] = False
 
         for event in events:
             if event.type == pygame.QUIT:
@@ -108,7 +108,6 @@ class GameManager:
                 Input.key_down[event.key] = True
                 Input.key_pressed[event.key] = True
             elif event.type == pygame.KEYUP:
-                print(f"Keyup:{event.key}")
                 # Reset the key state when the key is released
                 Input.key_down[event.key] = False
                 Input.key_pressed[event.key] = False
@@ -124,7 +123,8 @@ class GameManager:
                     scene = self.scene
                 scene.append_object(event.message[0])
             elif event.type == GameEvent.EVENT_DIALOG:
-                self.scene.show_dialog_box(event.portrait, event.text)
+                CurrentState.state = GameState.DIALOG
+                self.scene.show_dialog_box(event.portrait, event.text, event.callback)
             elif event.type == GameEvent.EVENT_DESTROY:
                 # Append object to the scene object list
                 scene = event.message[1]

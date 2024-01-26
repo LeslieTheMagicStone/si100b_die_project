@@ -99,7 +99,6 @@ class Player(
         self.anim_timer -= Time.delta_time
 
     def handle_movement(self):
-
         keys = pygame.key.get_pressed()
 
         dx = dy = 0
@@ -121,11 +120,11 @@ class Player(
         self.velocity = velocity
 
     def handle_bullet_change(self):
-        if pygame.K_u in Input.key_down.keys() and Input.key_down[pygame.K_u]:
+        if Input.get_key_down(pygame.K_u):
             self.bullet_type = (self.bullet_type + 1) % 2
 
     def handle_tools(self):
-        if pygame.K_j in Input.key_down.keys() and Input.key_down[pygame.K_j]:
+        if Input.get_key_down(pygame.K_j):
             if self.tools_flag == 1:
                 self.bullet_causality = (self.bullet_causality + 1) % 3
 
