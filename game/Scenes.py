@@ -49,14 +49,31 @@ class Scene:
         self.append_object(self.player)
 
         # Append player health bar
-        self.health_bar = generator.generate(
-            HealthBar(self.player, self.player.rect, dy=20), self
-        )
+        self.health_bar = HealthBar(self.player, self.player.rect, dy=20)
         self.append_object(self.health_bar)
+        # Append player exp bar
+        self.exp_bar = ExpBar(self.player, self.player.rect, dy=30)
+        self.append_object(self.exp_bar)
 
     # Start function called each time the scene is entered
     def start(self):
-        pass
+        self.player.reset_pos()
+
+        # Generate player teleport effect
+        EffectManager.generate(
+            "teleport", self.player.rect.centerx, self.player.rect.centery - 20
+        )
+
+        # Generate scene name text
+        centerx = WindowSettings.width // 2
+        centery = WindowSettings.height // 2 - 100
+        self.append_object(Text(centerx, centery, f"{self.name}", 50, duration=5))
+        self.append_object(
+            Text(centerx, centery + 15, "_" * (len(self.name) + 2), 50, duration=5)
+        )
+        self.append_object(
+            Text(centerx, centery - 50, "_" * (len(self.name) + 2), 50, duration=5)
+        )
 
     # Update function called once per frame
     def update(self):
@@ -186,6 +203,10 @@ class Scene:
         if obj not in self._objects:
             return
 
+        if hasattr(obj, "childs"):
+            for child in obj.childs:
+                self.remove_object(child)
+
         self._objects.remove(obj)
 
         if isinstance(obj, Collidable):
@@ -202,7 +223,7 @@ class Scene:
         self._renderables = sorted(self._renderables, key=lambda x: x.render_index)
 
     def update_camera(self, player: Collidable):
-        self.camera.move_ip(player.velocity[0], player.velocity[1])
+        self.camera.center = player.rect.center
 
     #  Get the offset to be added to the position of the renderables when rendered
     def get_render_offset(self):
@@ -246,6 +267,8 @@ class MainMenuScene(Scene):
         self.move_right = 1
         self.move_down = 1
 
+        CurrentState.state = GameState.MAIN_MENU
+
     def update(self):
         super().update()
         # A warm-up mini game,
@@ -265,6 +288,10 @@ class MainMenuScene(Scene):
         # Check if player clicks the icon, if so, GOTO first scene.
         mouse = pygame.mouse
         if mouse.get_pressed()[0] and self.rect.collidepoint(mouse.get_pos()):
+            EventSystem.fire_switch_event(1)
+
+        # You can skip this game by pressing enter
+        if Input.get_key_down(pygame.K_RETURN):
             EventSystem.fire_switch_event(1)
 
     def render(self):
@@ -290,16 +317,19 @@ class SafeRoomScene(Scene):
         generator.generate(Portal(123, 123, "Mob Room"), scene=self)
 
         # Init npcs
+
         self.dialog_npc1 = generator.generate(
-            DialogNPC(100, 100, "阿柴1号", "完蛋，你被coke老师包围了！", self.player.rect), scene=self
+            DialogNPC(300, 300, "阿柴1号", "完蛋，你被coke老师包围了！", self.player.rect), scene=self
         )
         self.dialog_npc2 = generator.generate(
-            DialogNPC(200, 200, "阿柴2号", "准备好了吗？，进入传送门，直面coke老师吧", self.player.rect), scene=self
+            DialogNPC(200, 200, "阿柴2号", "准备好了吗？，进入传送门，直面coke老师吧", self.player.rect),
+            scene=self,
         )
-        
 
         # Init obstacles
-        rects_to_avoid = [c.rect for c in self._collidables if c.is_rigid] + [p.rect for p in self._portals]
+        rects_to_avoid = [c.rect for c in self._collidables if c.is_rigid] + [
+            p.rect for p in self._portals
+        ]
         self.obstacles = Maps.gen_safe_room_obstacles(rects_to_avoid)
         for obstacle in self.obstacles:
             generator.generate(obstacle, scene=self)
@@ -309,8 +339,6 @@ class SafeRoomScene(Scene):
         for wall in self.walls:
             generator.generate(wall, scene=self)
 
-        
-
     def start(self):
         super().start()
         self.player.reset_pos()
@@ -319,6 +347,17 @@ class SafeRoomScene(Scene):
         EffectManager.generate(
             "teleport", self.player.rect.centerx, self.player.rect.centery - 20
         )
+
+        if "BossSlayer" in self.player.Buff_state.keys():
+            self.remove_object(self.dialog_npc1)
+            self.dialog_npc1 = generator.generate(
+                DialogNPC(300, 300, "阿柴迷弟1号", "你打败了boss！", self.player.rect), scene=self
+            )
+            self.remove_object(self.dialog_npc2)
+            self.dialog_npc2 = generator.generate(
+                DialogNPC(200, 200, "阿柴迷妹2号", "太强了！", self.player.rect),
+                scene=self,
+            )
 
     def render(self):
         # Fill the background with black
@@ -329,7 +368,7 @@ class SafeRoomScene(Scene):
 
 
 class MobRoomScene(Scene):
-    def __init__(self, data: SceneTransferData):
+    def __init__(self, data: SceneTransferData, mob_count, mob_level):
         super().__init__(data)
 
         # Init tile map
@@ -337,32 +376,33 @@ class MobRoomScene(Scene):
         self.tile_map = generator.generate(tile_map, scene=self)
 
         # Init monsters
-        monster = Monster(self.player.rect, 100, 100)
-        generator.generate(monster, scene=self)
+        monster_count = mob_count + randint(-1, 1)
+        for i in range(monster_count):
+            [(left, top), (right, bottom)] = self.tile_map.get_corners()
+            x = randint(left + 50, right - 50)
+            y = randint(top + 50, bottom - 50)
+            level = mob_level + randint(-1, 1)
+            level = max(level, 1)
+            causality = Causality(randint(1, 2))
+            monster = Monster(self.player.rect, x, y, causality=causality, level=level)
+
+            # Avoid spawning monster inside rigid collidables
+            collide_list = monster.rect.collidelist(
+                [c.rect for c in self._collidables if c.is_rigid and c != monster]
+            )
+            if collide_list != -1:
+                i -= 1
+                continue
+
+            generator.generate(monster, scene=self)
 
         # Init walls
         self.walls = Maps.gen_walls(self.tile_map.get_corners())
         for wall in self.walls:
             generator.generate(wall, scene=self)
 
-        # Init monsters
-        monster_count = randint(5, 10)
-        for i in range(monster_count):
-            [(left, top), (right, bottom)] = self.tile_map.get_corners()
-            x = randint(left + 50, right - 50)
-            y = randint(top + 50, bottom - 50)
-            causality = Causality(randint(1, 2))
-            monster = Monster(self.player.rect, x, y, causality=causality)
-            generator.generate(monster, scene=self)
-
     def start(self):
         super().start()
-        self.player.reset_pos()
-
-        # Generate teleport anim
-        EffectManager.generate(
-            "teleport", self.player.rect.centerx, self.player.rect.centery - 20
-        )
 
     def update(self):
         super().update()
@@ -372,7 +412,7 @@ class MobRoomScene(Scene):
                 break
         else:
             if len(self._portals) == 0:
-                generator.generate(Portal(150, 150, "Tool Room"), scene=self)
+                generator.generate(Portal(150, 150, "next"), scene=self)
 
     def render(self):
         # Render background with black
@@ -389,7 +429,7 @@ class ToolRoomScence(Scene):
         tile_map = Maps.gen_Tool_room_map()
         self.tile_map = generator.generate(tile_map, scene=self)
 
-        face_mark = Tools(100, 100)
+        face_mark = Tools(300, 300)
         generator.generate(face_mark, scene=self)
 
         self.walls = Maps.gen_walls(self.tile_map.get_corners())
@@ -398,14 +438,45 @@ class ToolRoomScence(Scene):
 
     def start(self):
         super().start()
-        self.player.reset_pos()
-
-        EffectManager.generate(
-            "teleport", self.player.rect.centerx, self.player.rect.centery - 20
-        )
 
     def update(self):
         super().update()
+
+        if "Causality" in self.player.Buff_state.keys():
+            if len(self._portals) == 0:
+                generator.generate(Portal(150, 150, "next"), scene=self)
+
+    def render(self):
+        # Render background with black
+        background_color = (0, 0, 0)
+        self.window.fill(background_color)
+        # Render renderable objects
+        super().render()
+
+
+class BossRoomScene(Scene):
+    def __init__(self, data: SceneTransferData):
+        super().__init__(data)
+
+        tile_map = Maps.gen_boss_room_map()
+        self.tile_map = generator.generate(tile_map, scene=self)
+
+        self.walls = Maps.gen_walls(self.tile_map.get_corners())
+        for wall in self.walls:
+            generator.generate(wall, scene=self)
+
+        # Init boss
+        self.boss = Boss(self.player.rect, BossSettings.coordX, BossSettings.coordY)
+        self.append_object(self.boss)
+
+    def start(self):
+        super().start()
+
+    def update(self):
+        super().update()
+
+        if len(self._portals) == 0:
+            generator.generate(Portal(150, 150, "Main Menu"), scene=self)
 
     def render(self):
         # Render background with black

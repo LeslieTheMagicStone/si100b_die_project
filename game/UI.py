@@ -1,7 +1,9 @@
 import pygame
-from Attributes import Renderable, Damageable
+from Attributes import *
 from Settings import *
 from globals import *
+from EventSystem import *
+
 
 class HealthBar(Renderable):
     def __init__(
@@ -24,12 +26,19 @@ class HealthBar(Renderable):
 
         self.dy = dy
 
+        self.font = pygame.font.Font(None, 15)
+        self.fontColor = (255, 255, 255)
+
     def draw(self, window: pygame.Surface, dx=0, dy=0):
         if not self.is_active:
             return
 
-        # Calculate the width of the health bar based on current health
-        bar_fill = (self.owner.cur_hp / self.owner.max_hp) * self.width
+        if self.owner.max_hp != 0:
+            # Calculate the width of the health bar based on current health
+            bar_fill = (self.owner.cur_hp / self.owner.max_hp) * self.width
+        else:
+            bar_fill = self.width
+            print(f"Zero max hp: {self.owner}")
 
         # Draw the background bar
         pygame.draw.rect(
@@ -52,6 +61,89 @@ class HealthBar(Renderable):
                 self.owner_rect.y - self.height - self.dy + dy,
                 bar_fill,
                 self.height,
+            ),
+        )
+
+        # Draw the hp text
+        text_surface = self.font.render(
+            f"{self.owner.cur_hp}/{self.owner.max_hp}", True, self.fontColor
+        )
+        window.blit(
+            text_surface,
+            (
+                self.owner_rect.centerx - text_surface.get_width() // 2 + dx,
+                self.owner_rect.y - self.height - self.dy + dy,
+            ),
+        )
+
+
+class ExpBar(Renderable):
+    def __init__(
+        self,
+        owner: Levelable,
+        owner_rect: pygame.Rect,
+        width=ExpBarSettings.width,
+        height=ExpBarSettings.height,
+        render_index=RenderIndex.ui,
+        is_active=True,
+        dy=ExpBarSettings.dy,
+    ):
+        super().__init__(render_index, is_active)
+
+        self.owner = owner
+        self.owner_rect = owner_rect
+
+        self.width = width
+        self.height = height
+
+        self.dy = dy
+
+        self.font = pygame.font.Font(None, 25)
+        self.fontColor = (255, 255, 255)
+
+    def draw(self, window: pygame.Surface, dx=0, dy=0):
+        if not self.is_active:
+            return
+
+        # Calculate the width of the bar based on current health
+        bar_fill = (self.owner.cur_exp / self.owner.max_exp) * self.width
+
+        # Draw the background bar
+        pygame.draw.rect(
+            window,
+            (122, 122, 122),
+            (
+                self.owner_rect.centerx - self.width // 2 + dx,
+                self.owner_rect.y - self.height - self.dy + dy,
+                self.width,
+                self.height,
+            ),
+        )
+
+        # Draw the filled portion of the bar
+        pygame.draw.rect(
+            window,
+            (200, 200, 200),
+            (
+                self.owner_rect.centerx - self.width // 2 + dx,
+                self.owner_rect.y - self.height - self.dy + dy,
+                bar_fill,
+                self.height,
+            ),
+        )
+
+        # Draw the level text
+        text_surface = self.font.render(
+            f"Lv. {self.owner.level}", True, self.fontColor, (0, 0, 0)
+        )
+        window.blit(
+            text_surface,
+            (
+                self.owner_rect.centerx
+                - self.width // 2
+                - text_surface.get_width()
+                + dx,
+                self.owner_rect.y - self.height - self.dy + dy,
             ),
         )
 
@@ -92,6 +184,63 @@ class DialogIcon(Renderable):
                 self.owner_rect.y - self.height - self.dy + dy,
             ),
         )
+
+
+class Text(Renderable):
+    def __init__(
+        self,
+        x,
+        y,
+        text,
+        size,
+        color=(255, 255, 255),
+        duration=-1,
+        render_index=RenderIndex.ui,
+        is_active=True,
+        contains_chinese=False,
+    ):
+        super().__init__(render_index, is_active)
+
+        if contains_chinese:
+            self.font = pygame.font.Font(GamePath.youYuan, size)
+        else:
+            self.font = pygame.font.Font(None, size)
+
+        self.image = self.font.render(text, True, color)
+        self.rect = self.image.get_rect()
+        self.rect.center = (x, y)
+        self.duration = duration
+        self.life_time = duration
+
+    def draw(self, window: pygame.Surface, dx=0, dy=0):
+        if not self.is_active:
+            return
+
+        if self.duration == -1:
+            window.blit(self.image, self.rect)
+            return
+        elif self.life_time < 0:
+            EventSystem.fire_destroy_event(self)
+
+        # Fade in, hold, fade out
+        self.life_time -= Time.delta_time
+
+        # Fade in state
+        if self.duration / 3 * 2 < self.life_time < self.duration:
+            alpha = 255 * (
+                1 - ((self.life_time - self.duration / 3 * 2) / (self.duration / 3))
+            )
+        # Hold state
+        elif self.duration / 3 * 1 < self.life_time < self.duration / 3 * 2:
+            alpha = 255
+        # Fade out state
+        else:
+            alpha = 255 * ((self.life_time - 0) / (self.duration / 3))
+        
+        self.image.set_alpha(alpha)
+
+        window.blit(self.image, self.rect)
+
 
 
 class DialogBox(Renderable):

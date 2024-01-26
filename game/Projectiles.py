@@ -52,8 +52,13 @@ class Tools(Projectile):
             if other.layer == "Player":
                 EventSystem.fire_destroy_event(self)
                 EventSystem.fire_dialog_event(
-                    self.image, "这是一个古老的面具，\n上面蕴藏着神秘的力量，\n可以让玩家拥有转换能力"
+                    self.image,
+                    "这是一个古老的面具，上面蕴藏着神秘的力量，可以让玩家拥有转换能力，（按J切换子弹元素：普通/冰/火）",
+                    callback=self.add_causility_buff,
                 )
+
+    def add_causility_buff(self):
+        EventSystem.fire_buff_event("Causality", -1)
 
     def draw(self, window: pygame.Surface, dx=0, dy=0):
         window.blit(self.image, self.rect.move(dx, dy))
@@ -65,7 +70,7 @@ class Bullet(Projectile):
         x,
         y,
         velocity,
-        damage=ProjectileSettings.bulletDamage,
+        damage,
         attribute=Causality.NORMAL,
     ) -> None:
         super().__init__(x, y)
@@ -80,7 +85,7 @@ class Bullet(Projectile):
 
         self.velocity = velocity
         self.damage = damage
-        self.attribute = attribute
+        self.causality = attribute
 
     def update(self):
         super().update()
@@ -103,7 +108,7 @@ class Big_bullet(Bullet):
         x,
         y,
         velocity,
-        damage=ProjectileSettings.bulletDamage * 4,
+        damage,
         attribute=Causality.NORMAL,
     ) -> None:
         super().__init__(x, y, velocity, damage)
@@ -113,7 +118,9 @@ class Big_bullet(Bullet):
             self.image,
             (ProjectileSettings.bigBulletWidth, ProjectileSettings.bigBulletHeight),
         )
-        self.image = pygame.transform.rotate(self.image, Math.angle_degrees(velocity))
+        self.image = pygame.transform.rotate(
+            self.image, Math.angle_degrees(velocity) - 90
+        )
 
         self.rect = self.image.get_rect()
         self.rect.center = (x, y)
@@ -124,6 +131,3 @@ class Big_bullet(Bullet):
 
     def draw(self, window: pygame.Surface, dx=0, dy=0):
         window.blit(self.image, self.rect.move(dx, dy))
-
-
-"""Laser通过普通子弹在循环中生成连续的多个子弹传实现"""

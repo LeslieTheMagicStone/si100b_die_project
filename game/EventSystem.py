@@ -38,3 +38,8 @@ class EventSystem:
             GameEvent.EVENT_DESTROY, message=(obj, scene)
         )
         pygame.event.post(destroy_event)
+
+    @classmethod
+    def fire_buff_event(cls, buff_name, buff_time):
+        buff_event = pygame.event.Event(GameEvent.EVENT_BUFF, buff_name=buff_name, buff_time = buff_time)
+        pygame.event.post(buff_event)

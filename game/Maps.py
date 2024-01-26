@@ -158,10 +158,23 @@ def gen_Tool_room_map() -> TileMap:
     return TileMap(map_obj)
 
 
-def gen_boss_map():
-    ##### Your Code Here ↓ #####
-    pass
-    ##### Your Code Here ↑ #####
+def gen_boss_room_map()->TileMap:
+    tile_images = [pygame.image.load(tile) for tile in GamePath.bossTiles]
+    tile_width = SceneSettings.tileWidth
+    tile_height = SceneSettings.tileHeight
+    tile_images = [
+        pygame.transform.scale(image, (tile_width, tile_height))
+        for image in tile_images
+    ]
+
+    map_obj = []
+    for i in range(SceneSettings.tileXnum):
+        column = []
+        for j in range(SceneSettings.tileYnum):
+            column.append(tile_images[randint(0, len(tile_images) - 1)])
+        map_obj.append(column)
+
+    return TileMap(map_obj)
 
 
 def gen_safe_room_obstacles(rects_to_avoid: list[pygame.Rect]) -> list[Block]:
@@ -195,7 +208,26 @@ def gen_wild_obstacle():
     ##### Your Code Here ↑ #####
 
 
-def gen_boss_obstacle():
-    ##### Your Code Here ↓ #####
-    pass
-    ##### Your Code Here ↑ #####
+def gen_boss_room_obstacles(rects_to_avoid: list[pygame.Rect]) -> list[Block]:
+    image = pygame.image.load(GamePath.bossWall)
+
+    obstacles = []
+    tile_width = SceneSettings.tileWidth
+    tile_height = SceneSettings.tileHeight
+
+    # Obstacle will not generate around the rects to avoid
+    # within the radius
+    null_radius = 100
+
+    for i in range(SceneSettings.tileXnum):
+        for j in range(SceneSettings.tileYnum):
+            tile_pos = (tile_width * i, tile_height * j)
+            # Avoid generating around the rects to avoid
+            if random() < SceneSettings.obstacleDensity and all(
+                Math.distance(rect.center, tile_pos) > null_radius
+                for rect in rects_to_avoid
+            ):
+                obstacles.append(
+                    Block(image, tile_pos[0], tile_pos[1], tile_width, tile_height)
+                )
+    return obstacles

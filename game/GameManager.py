@@ -30,8 +30,22 @@ class GameManager:
         self.scenes: list[Scene] = []
         self.scenes.append(MainMenuScene(self.pack_scene_transfer_data("Main Menu")))
         self.scenes.append(SafeRoomScene(self.pack_scene_transfer_data("Safe Room")))
-        self.scenes.append(MobRoomScene(self.pack_scene_transfer_data("Mob Room")))
+        self.scenes.append(
+            MobRoomScene(self.pack_scene_transfer_data("Mob Room"), 5, 1)
+        )
         self.scenes.append(ToolRoomScence(self.pack_scene_transfer_data("Tool Room")))
+        self.scenes.append(
+            MobRoomScene(self.pack_scene_transfer_data("Another Mob Room"), 6, 3)
+        )
+        self.scenes.append(
+            MobRoomScene(self.pack_scene_transfer_data("Mob Room 3"), 8, 10)
+        )
+        self.scenes.append(
+            MobRoomScene(self.pack_scene_transfer_data("Why So Many Mob Rooms?"), 8, 12)
+        )
+        self.scenes.append(
+            BossRoomScene(self.pack_scene_transfer_data("FINALE: THE BOSS"))
+        )
 
         # Default scene is main menu
         self.flush_scene("Main Menu")
@@ -53,7 +67,9 @@ class GameManager:
     """ Scene-related update functions """
 
     def flush_scene(self, GOTO):
-        if isinstance(GOTO, str):
+        if GOTO == "next":
+            self.flush_scene(self.get_scene_index(self.scene.name) + 1)
+        elif isinstance(GOTO, str):
             self.flush_scene(self.get_scene_index(GOTO))
         elif isinstance(GOTO, int):
             if 0 <= GOTO < len(self.scenes):
@@ -61,8 +77,8 @@ class GameManager:
                 self.scene: Scene = self.scenes[GOTO]
                 # Global scene name
                 SceneManager.current_scene = self.scene.name
-                self.scene.start()
                 CurrentState.state = GameState.NORMAL
+                self.scene.start()
                 pygame.display.set_caption(f"{WindowSettings.name} - {self.scene.name}")
             else:
                 raise IndexError(f"Scene index: {GOTO} out of range")
@@ -84,6 +100,26 @@ class GameManager:
             Input.key_down[key] = False
         # Handle event several times to fetch all events
         # (I know it seems dirty, but it works)
+        self.handle_events()
+        self.handle_events()
+        self.handle_events()
+        self.handle_events()
+        self.handle_events()
+        self.handle_events()
+        self.handle_events()
+        self.handle_events()
+        self.handle_events()
+        self.handle_events()
+        self.handle_events()
+        self.handle_events()
+        self.handle_events()
+        self.handle_events()
+        self.handle_events()
+        self.handle_events()
+        self.handle_events()
+        self.handle_events()
+        self.handle_events()
+        self.handle_events()
         self.handle_events()
         self.handle_events()
         self.handle_events()
@@ -139,6 +175,9 @@ class GameManager:
                 if damage > 0:
                     EffectManager.generate(f"text: {damage}", position[0], position[1])
                 EffectManager.generate("smoke", position[0], position[1])
+            elif event.type == GameEvent.EVENT_BUFF:
+                # Add buff to player
+                self.player.add_Buff(event.buff_name, event.buff_time)
 
     def pack_scene_transfer_data(self, name) -> SceneTransferData:
         return SceneTransferData(player=self.player, window=self.window, name=name)

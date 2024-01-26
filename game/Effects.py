@@ -69,6 +69,8 @@ class EffectManager:
             generator.generate(SmokeEffect(x, y))
         elif effect_name == "teleport":
             generator.generate(TeleportEffect(x, y))
+        elif effect_name == "boss":
+            generator.generate(BossShowupEffect(x, y))
         else:
             raise ValueError(f"no effect named {effect_name}")
 
@@ -90,4 +92,9 @@ class SmokeEffect(Effect):
 
 class TeleportEffect(Effect):
     def __init__(self, x, y, width=100, height=100, looping=False) -> None:
+        super().__init__(GamePath.teleport, x, y, width, height, looping, tpf=2)
+
+
+class BossShowupEffect(Effect):
+    def __init__(self, x, y, width=600, height=600, looping=False) -> None:
         super().__init__(GamePath.teleport, x, y, width, height, looping, tpf=2)

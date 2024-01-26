@@ -1,9 +1,9 @@
 # -*- coding:utf-8 -*-
 
 import pygame
-from Projectiles import RenderIndex
-from Settings import RenderIndex
-from UI import RenderIndex
+from Projectiles import Causality, RenderIndex
+from Settings import Causality, RenderIndex
+from UI import Causality, RenderIndex
 import generator
 
 from Settings import *
@@ -13,6 +13,7 @@ from EventSystem import *
 from Projectiles import *
 from UI import *
 from globals import *
+from Effects import *
 from random import randint
 
 
@@ -62,11 +63,11 @@ class DialogNPC(NPC):
         self.text = text
         # Save player rect to detect distance
         self.player_rect = player_rect
-        # If the npc is dialoging
-        self.is_dialoging = False
+
         # Moving behavior
         self.is_walking = True
         self.behavior_timer = 1
+        self.childs = []
 
     def start(self):
         super().start()
@@ -74,15 +75,17 @@ class DialogNPC(NPC):
         # Init trigger text
         self.trigger_text = generator.generate(DialogIcon(self.rect, "按Enter对话", dy=20))
         self.trigger_text.set_active(False)
+        self.childs.append(self.trigger_text)
         self.name_text = generator.generate(DialogIcon(self.rect, self.name, dy=0))
         self.name_text.set_active(False)
+        self.childs.append(self.name_text)
 
     def update(self):
         self.handle_dialog()
         self.handle_movement()
 
     def handle_movement(self):
-        if self.is_dialoging:
+        if CurrentState.state == GameState.DIALOG:
             return
 
         if self.behavior_timer < 0:
@@ -100,23 +103,22 @@ class DialogNPC(NPC):
 
     def handle_dialog(self):
         distance = Math.distance(self.rect.center, self.player_rect.center)
-        if distance < NPCSettings.npcTriggerRadius and not self.is_dialoging:
+        if (
+            distance < NPCSettings.npcTriggerRadius
+            and CurrentState.state != GameState.DIALOG
+        ):
             self.trigger_text.set_active(True)
             self.name_text.set_active(True)
             if Input.get_key_down(pygame.K_RETURN):
-                self.is_dialoging = True
                 self.trigger_text.set_active(False)
                 self.name_text.set_active(False)
-                EventSystem.fire_dialog_event(self.image, self.text, self.end_dialog)
+                EventSystem.fire_dialog_event(self.image, self.text)
         else:
             self.trigger_text.set_active(False)
             self.name_text.set_active(False)
 
-    def end_dialog(self):
-        self.is_dialoging = False
 
-
-class Monster(NPC, Damageable):  #
+class Monster(NPC, Damageable, Levelable):  #
     def __init__(
         self,
         player_rect: pygame.Rect,
@@ -128,9 +130,11 @@ class Monster(NPC, Damageable):  #
         defence=1,
         money=15,
         causality=Causality.ICE,
+        level=1,
     ):
         NPC.__init__(self, x, y, name="Monster", render_index=RenderIndex.monster)
         Damageable.__init__(self)
+        Levelable.__init__(self)
 
         # Collision Layer is enemy
         self.layer = "Enemy"
@@ -149,20 +153,30 @@ class Monster(NPC, Damageable):  #
         # Save player position
         self.player_rect = player_rect
         # Attribute related
+        level = max(level, 1)
+        self.level = level
+        self.exp = self.level
         self.speed = speed
-        self.max_hp = hp
-        self.attack = attack
-        self.defence = defence
+        self.max_hp = hp * level
+        self.attack = int(attack * (1 + level / 10))
+        self.defence = int(defence * (1 + level / 3))
         self.money = money
         self.causality = causality
         # Combat related
         self.is_dead = False
         self.cur_hp = self.max_hp
 
+        self.childs = []
+
     def start(self):
         # Init health bar
         self.health_bar = HealthBar(self, self.rect)
         generator.generate(self.health_bar)
+        self.childs.append(self.health_bar)
+        # Init exp bar
+        self.exp_bar = ExpBar(self, self.rect)
+        generator.generate(self.exp_bar)
+        self.childs.append(self.exp_bar)
 
     def update(self):
         if self.is_dead:
@@ -187,8 +201,8 @@ class Monster(NPC, Damageable):  #
         return damage
 
     def handle_death(self):
-        EventSystem.fire_destroy_event(self.health_bar)
         EventSystem.fire_destroy_event(self)
+        EventSystem.fire_buff_event("exp", self.exp)
 
     def handle_collisions(self):
         # if len(self.collisions_enter) != 0:
@@ -197,31 +211,71 @@ class Monster(NPC, Damageable):  #
         #     print("stay", self.collisions_stay, self.velocity)
         # if len(self.collisions_exit) != 0:
         #     print("exit", self.collisions_exit, self.velocity)
-        for enter in self.collisions_enter:
-            if isinstance(enter, Projectile):
-                if isinstance(enter, Bullet):
-                    damage = self.handle_damage(enter.damage)
+        for other in self.collisions_enter:
+            if isinstance(other, Projectile):
+                if isinstance(other, Bullet):
+                    damage = other.damage
+                    if self.causality == Causality.FIRE:
+                        if other.causality == Causality.FIRE:
+                            damage //= 2
+                        elif other.causality == Causality.ICE:
+                            damage *= 2
+                    elif self.causality == Causality.ICE:
+                        if other.causality == Causality.ICE:
+                            damage //= 2
+                        elif other.causality == Causality.FIRE:
+                            damage *= 2
+                    damage = self.handle_damage(damage)
                     # Generate random offset of the hit point to make the game juicier
-                    ortho_normal = Math.ortho_normal(enter.velocity)
+                    ortho_normal = Math.ortho_normal(other.velocity)
                     random_offset = Math.scale(ortho_normal, randint(-20, 20))
                     EventSystem.fire_hit_event(
-                        damage, Math.add(random_offset, enter.rect.center)
+                        damage, Math.add(random_offset, other.rect.center)
                     )
-                    EventSystem.fire_destroy_event(enter)
+                    EventSystem.fire_destroy_event(other)
 
     def draw(self, window: pygame.Surface, dx=0, dy=0):
         window.blit(self.image, self.rect.move(dx, dy))
 
 
-class Boss(pygame.sprite.Sprite):
-    def __init__(self, x, y):
-        super().__init__()
+class Boss(Monster):
+    def __init__(
+        self,
+        player_rect: pygame.Rect,
+        x,
+        y,
+        speed=4,
+        hp=1000,
+        attack=30,
+        defence=10,
+        money=15,
+        causality=Causality.NORMAL,
+        level=1,
+    ):
+        super().__init__(
+            player_rect, x, y, speed, hp, attack, defence, money, causality, level
+        )
+        self.image = pygame.image.load(GamePath.boss)
+        self.image = pygame.transform.scale(
+            self.image, (BossSettings.width, BossSettings.height)
+        )
+        self.rect = self.image.get_rect()
+        self.rect.center = (x, y)
+        # Scale the rect to make collision trigger more realistic
+        resize_amount = [-self.rect.width // 4, -self.rect.height // 4]
+        self.rect.inflate_ip(resize_amount[0], resize_amount[1])
 
-        ##### Your Code Here ↓ #####
-        pass
-        ##### Your Code Here ↑ #####
+    def start(self):
+        EffectManager.generate("boss", self.rect.centerx, self.rect.centery)
 
-    def draw(self, window, dx=0, dy=0):
-        ##### Your Code Here ↓ #####
-        pass
-        ##### Your Code Here ↑ #####
+    def handle_death(self):
+        super().handle_death()
+
+        EventSystem.fire_buff_event("BossSlayer", -1)
+
+    def draw(self, window: pygame.Surface, dx=0, dy=0):
+        # Calculate top-left corner of the picture separately
+        # because that of the rect has been changed when scaling
+        image_pos_x = self.rect.centerx - self.image.get_width() // 2
+        image_pos_y = self.rect.centery - self.image.get_height() // 2
+        window.blit(self.image, (image_pos_x + dx, image_pos_y + dy))

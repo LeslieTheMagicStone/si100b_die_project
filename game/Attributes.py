@@ -1,5 +1,6 @@
 from enum import Enum
 import pygame
+import math
 
 
 # MonoBehaviors have update() function
@@ -65,6 +66,26 @@ class Damageable:
         )
 
 
+class Levelable:
+    def __init__(self) -> None:
+        self.level = 1
+        self.max_exp = 10
+        self.cur_exp = 0
+
+    def add_exp(self, added_value):
+        self.cur_exp += added_value
+        if self.cur_exp > self.max_exp:
+            self.level_up()
+
+    def level_up(self):
+        self.level += 1
+        self.max_exp = self.get_max_exp(self.level)
+        self.cur_exp = 0
+
+    def get_max_exp(self, level):
+        return int((math.log(level) + 1) * 10)
+
+
 class Buffable:
     def __init__(self) -> None:
         # 角色的BUFF状态，初始啥都是空，空即为最初的状态
@@ -76,4 +97,5 @@ class Buffable:
         self.Buff_state[buff_name] = buff_time
 
     def delete_Buff(self, buff_name: str):
-        del self.Buff_state[buff_name]
+        if buff_name in self.Buff_state:
+            del self.Buff_state[buff_name]

@@ -12,8 +12,8 @@ class WindowSettings:
 
 
 class SceneSettings:
-    tileXnum = 48  # 64
-    tileYnum = 27  # 36
+    tileXnum = 40  # 64
+    tileYnum = 24  # 36
     tileWidth = tileHeight = 40
     obstacleDensity = 0.12
 
@@ -24,7 +24,7 @@ class PlayerSettings:
     width = 60
     height = 55
     hp = 20
-    attack = 5
+    attack = 2
     defence = 1
     money = 100
     animIntervalSecond = 0.1
@@ -44,10 +44,10 @@ class NPCType(Enum):
 
 
 class BossSettings:
-    width = 300
-    height = 300
-    coordX = (SceneSettings.tileXnum / 2) * SceneSettings.tileWidth - width / 2
-    coordY = (SceneSettings.tileYnum / 2) * SceneSettings.tileHeight - height / 2
+    width = 200
+    height = 200
+    coordX = (SceneSettings.tileXnum / 2) * SceneSettings.tileWidth
+    coordY = (SceneSettings.tileYnum / 2) * SceneSettings.tileHeight - height * 2
 
 
 class DialogSettings:
@@ -223,6 +223,12 @@ class HealthBarSettings:
     dy = 10
 
 
+class ExpBarSettings:
+    width = 60
+    height = 5
+    dy = 20
+
+
 class RenderIndex:
     portal = 0
     player = 1
@@ -237,7 +243,6 @@ class RenderIndex:
 
 class ProjectileSettings:
     bulletSpeed = 20
-    bulletDamage = 2
     bigBulletWidth = 40
     bigBulletHeight = 10
 
@@ -251,6 +256,8 @@ class Causality(Enum):
 class GameState(Enum):
     NORMAL = 0
     DIALOG = 1
+    FLUSHING = 2
+    MAIN_MENU = 3
 
 
 class GameEvent:
@@ -270,3 +277,5 @@ class GameEvent:
     EVENT_HIT = pygame.USEREVENT + 8
     # Remove object from scene._objects
     EVENT_DESTROY = pygame.USEREVENT + 9
+    # Add buff to player
+    EVENT_BUFF = pygame.USEREVENT + 10

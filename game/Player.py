@@ -17,7 +17,13 @@ from UI import *
 
 
 class Player(
-    pygame.sprite.Sprite, Collidable, Damageable, MonoBehavior, Renderable, Buffable
+    pygame.sprite.Sprite,
+    Collidable,
+    Damageable,
+    MonoBehavior,
+    Renderable,
+    Buffable,
+    Levelable,
 ):
     def __init__(self, x, y):
         # Must initialize everything one by one here
@@ -27,6 +33,7 @@ class Player(
         MonoBehavior.__init__(self)
         Renderable.__init__(self, render_index=RenderIndex.player)
         Buffable.__init__(self)
+        Levelable.__init__(self)
 
         # Collision layer
         self.layer = "Player"
@@ -60,7 +67,8 @@ class Player(
         self.fire_timer = 0
         self.bullet_type = 0
         self.bullet_causality = Causality.NORMAL
-        self.tools_flag = 0
+        # Flipping related
+        self.face_right = True
 
     def reset_pos(self, x=WindowSettings.width // 2, y=WindowSettings.height // 2):
         self.rect.center = (x, y)
@@ -68,6 +76,7 @@ class Player(
     def update(self):
         self.update_buffs()
         self.handle_bullet_change()
+        self.handle_tools()
         self.handle_fire()
         self.handle_movement()
         self.handle_collisions()
@@ -78,11 +87,19 @@ class Player(
         for buff, buff_time in self.Buff_state.items():
             if buff_time > 0:
                 self.Buff_state[buff] -= Time.delta_time
-            elif buff_time < 0 and buff_time != -1:
+            elif buff_time <= 0 and buff_time != -1:
                 to_be_deleted.append(buff)
 
         for buff in to_be_deleted:
             self.delete_Buff(buff)
+
+    def add_Buff(self, buff_name: str, buff_time: float):
+        super().add_Buff(buff_name, buff_time)
+
+        if buff_name == "exp":
+            self.add_exp(buff_time)
+
+        self.delete_Buff("exp")
 
     def handle_animation(self):
         # Only need to play run animation when running
@@ -99,6 +116,10 @@ class Player(
         self.anim_timer -= Time.delta_time
 
     def handle_movement(self):
+        if CurrentState.state == GameState.DIALOG:
+            self.velocity = (0, 0)
+            return
+
         keys = pygame.key.get_pressed()
 
         dx = dy = 0
@@ -124,11 +145,13 @@ class Player(
             self.bullet_type = (self.bullet_type + 1) % 2
 
     def handle_tools(self):
-        if Input.get_key_down(pygame.K_j):
-            if self.tools_flag == 1:
-                self.bullet_causality = (self.bullet_causality + 1) % 3
+        if Input.get_key_down(pygame.K_j) and "Causality" in self.Buff_state.keys():
+            self.bullet_causality = Causality((self.bullet_causality.value + 1) % 3)
 
     def handle_fire(self):
+        if CurrentState.state == GameState.DIALOG:
+            return
+
         if self.fire_timer > 0:
             self.fire_timer -= Time.delta_time
             return
@@ -155,6 +178,7 @@ class Player(
                     self.rect.centerx,
                     self.rect.centery,
                     bullet_velocity,
+                    self.attack,
                     attribute=self.bullet_causality,
                 )
             )
@@ -168,6 +192,7 @@ class Player(
                     self.rect.centerx,
                     self.rect.centery,
                     bullet_velocity,
+                    self.attack * 6,
                     attribute=self.bullet_causality,
                 )
             )
@@ -188,13 +213,24 @@ class Player(
     def handle_collisions(self):
         for enter in self.collisions_enter:
             if isinstance(enter, Portal):
-                if enter.GOTO != SceneManager.current_scene:
+                if (
+                    enter.GOTO != SceneManager.current_scene
+                    and CurrentState.state != GameState.FLUSHING
+                ):
+                    CurrentState.state = GameState.FLUSHING
                     EventSystem.fire_switch_event(enter.GOTO)
 
         for stay in self.collisions_stay:
             if isinstance(stay, Monster):
                 damage = self.handle_damage(stay.attack)
                 EventSystem.fire_hurt_event(damage)
+
+    def level_up(self):
+        super().level_up()
+
+        self.max_hp += 10
+        self.cur_hp = self.max_hp
+        self.attack += self.level % 2
 
     def draw(self, window: pygame.Surface, dx=0, dy=0):
         # Handle invulnerable animation
@@ -205,10 +241,22 @@ class Player(
         else:
             self.image.set_alpha(255)
 
+        # Handle flipping
+        if self.face_right and self.velocity[0] < 0:
+            self.face_right = False
+        elif not self.face_right and self.velocity[0] > 0:
+            self.face_right = True
+
+        if not self.face_right:
+            final_image = pygame.transform.flip(self.image, flip_x=True, flip_y=False)
+        else:
+            final_image = self.image
+
         # Calculate top-left corner of the picture separately
         # because that of the rect has been changed when scaling
+        offset = -8 if self.face_right else 8
         image_pos_x = (
-            self.rect.centerx - self.image.get_width() // 2 - 8
+            self.rect.centerx - self.image.get_width() // 2 + offset
         )  # tiny offset to look more realistic
         image_pos_y = self.rect.centery - self.image.get_height() // 2
-        window.blit(self.image, (image_pos_x + dx, image_pos_y + dy))
+        window.blit(final_image, (image_pos_x + dx, image_pos_y + dy))
