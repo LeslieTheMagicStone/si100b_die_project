@@ -203,6 +203,7 @@ class Monster(NPC, Damageable, Levelable):  #
     def handle_death(self):
         EventSystem.fire_destroy_event(self)
         EventSystem.fire_buff_event("exp", self.exp)
+        EventSystem.fire_buff_event("rein", self.exp)
 
     def handle_collisions(self):
         # if len(self.collisions_enter) != 0:

@@ -24,6 +24,7 @@ class Player(
     Renderable,
     Buffable,
     Levelable,
+    reinforcable,
 ):
     def __init__(self, x, y):
         # Must initialize everything one by one here
@@ -34,6 +35,7 @@ class Player(
         Renderable.__init__(self, render_index=RenderIndex.player)
         Buffable.__init__(self)
         Levelable.__init__(self)
+        reinforcable.__init__(self)
 
         # Collision layer
         self.layer = "Player"
@@ -69,6 +71,7 @@ class Player(
         self.bullet_causality = Causality.NORMAL
         # Flipping related
         self.face_right = True
+        self.reinforcing = 0
 
     def reset_pos(self, x=WindowSettings.width // 2, y=WindowSettings.height // 2):
         self.rect.center = (x, y)
@@ -81,6 +84,7 @@ class Player(
         self.handle_movement()
         self.handle_collisions()
         self.handle_animation()
+        self.handle_reinforce()
 
     def update_buffs(self):
         to_be_deleted = []
@@ -99,7 +103,11 @@ class Player(
         if buff_name == "exp":
             self.add_exp(buff_time)
 
+        if buff_name == "rein":
+            self.add_accumulative(buff_time + 1)
+
         self.delete_Buff("exp")
+        self.delete_Buff("rein")
 
     def handle_animation(self):
         # Only need to play run animation when running
@@ -144,6 +152,11 @@ class Player(
         if Input.get_key_down(pygame.K_u):
             self.bullet_type = (self.bullet_type + 1) % 2
 
+    def handle_reinforce(self):
+        if Input.get_key_down(pygame.K_SPACE) and self.readly == 1:
+            self.finished()
+            self.add_Buff("Reinforce", 5)
+
     def handle_tools(self):
         if Input.get_key_down(pygame.K_j) and "Causality" in self.Buff_state.keys():
             self.bullet_causality = Causality((self.bullet_causality.value + 1) % 3)
@@ -151,6 +164,10 @@ class Player(
     def handle_fire(self):
         if CurrentState.state == GameState.DIALOG:
             return
+
+        increase = 0
+        if "Reinforce" in self.Buff_state.keys():
+            increase = 2
 
         if self.fire_timer > 0:
             self.fire_timer -= Time.delta_time
@@ -178,7 +195,7 @@ class Player(
                     self.rect.centerx,
                     self.rect.centery,
                     bullet_velocity,
-                    self.attack,
+                    self.attack + increase,
                     attribute=self.bullet_causality,
                 )
             )
@@ -192,7 +209,7 @@ class Player(
                     self.rect.centerx,
                     self.rect.centery,
                     bullet_velocity,
-                    self.attack * 6,
+                    (self.attack + increase * 2) * 6,
                     attribute=self.bullet_causality,
                 )
             )
@@ -202,8 +219,10 @@ class Player(
     def handle_damage(self, damage):
         if "Invulnerable" in self.Buff_state.keys():
             return 0
-
-        damage = max(1, damage - self.defence)
+        decrease = 0
+        if "Reinforce" in self.Buff_state.keys():
+            decrease = 2
+        damage = max(0, 1 - decrease, damage - self.defence - decrease)
         self.cur_hp = max(0, self.cur_hp - damage)
         EventSystem.fire_hurt_event(damage)
         self.add_Buff("Invulnerable", 0.5)
