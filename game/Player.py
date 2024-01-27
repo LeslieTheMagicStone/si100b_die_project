@@ -112,19 +112,31 @@ class Player(
                 to_be_deleted.append(buff)
 
         for buff in to_be_deleted:
-            self.delete_Buff(buff)
+            self.delete_buff(buff)
 
     def add_buff(self, buff_name: str, buff_time: float):
         super().add_buff(buff_name, buff_time)
 
         if buff_name == "exp":
             self.add_exp(buff_time)
-
-        if buff_name == "rein":
+            self.delete_buff("exp")
+        elif buff_name == "rein":
             self.add_accumulative(buff_time)
+            self.delete_buff("rein")
+        elif buff_name == "cost":
+            self.level -= buff_time
+            PlayerLevel.value = self.level
+            self.delete_buff("cost")
+        elif buff_name == "defence":
+            self.defence += buff_time
+            self.delete_buff("defence")
+        elif buff_name == "hp":
+            self.max_hp += buff_time
+            self.cur_hp = self.max_hp
+            self.delete_buff("hp")
 
-        self.delete_Buff("exp")
-        self.delete_Buff("rein")
+
+        
 
     def handle_running_animation(self):
         # Only need to play run animation when running
@@ -301,6 +313,8 @@ class Player(
         self.max_hp += 10
         self.cur_hp = self.max_hp
         self.attack += self.level % 2
+
+        PlayerLevel.value = self.level
 
     def draw(self, window: pygame.Surface, dx=0, dy=0):
         if CurrentState.state != GameState.GAME_OVER:

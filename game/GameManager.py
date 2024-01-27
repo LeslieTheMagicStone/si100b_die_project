@@ -22,15 +22,14 @@ class GameManager:
         )
         pygame.display.set_caption(WindowSettings.name)
 
-        # Initialize player
-        self.player = Player(0, 0)
-        self.player.reset_pos()
-
         self.game_reset()
 
     def game_reset(self):
-        # Reset player hp to max
-        self.player.cur_hp = self.player.max_hp
+        # Reset BGM Player
+        BgmPlayer.set_volume(1)
+        # Initialize player
+        self.player = Player(0, 0)
+        self.player.reset_pos()
 
         # Initialize scenes
         self.scenes: list[Scene] = []
@@ -141,6 +140,9 @@ class GameManager:
             elif event.type == GameEvent.EVENT_DIALOG:
                 CurrentState.state = GameState.DIALOG
                 self.scene.show_dialog_box(event.portrait, event.text, event.callback)
+            elif event.type == GameEvent.EVENT_SHOP:
+                CurrentState.state = GameState.DIALOG
+                self.scene.show_shop_box(event.portrait, event.items, event.callback)
             elif event.type == GameEvent.EVENT_DESTROY:
                 # Append object to the scene object list
                 scene = event.message[1]
@@ -161,7 +163,6 @@ class GameManager:
             elif event.type == GameEvent.EVENT_GAME_OVER:
                 # Set current gamestate to gameover
                 CurrentState.state = GameState.GAME_OVER
-
 
     def pack_scene_transfer_data(self, name) -> SceneTransferData:
         return SceneTransferData(player=self.player, window=self.window, name=name)

@@ -5,6 +5,7 @@ from Settings import *
 from Settings import HealthBarSettings, RenderIndex
 from globals import *
 from EventSystem import *
+from BgmPlayer import *
 
 
 class HealthBar(Renderable):
@@ -230,7 +231,7 @@ class FNBar(Renderable):
 
         self.dy = dy
 
-        self.font = pygame.font.Font(None, 25)
+        self.font = pygame.font.Font(GamePath.youYuan, 25)
         self.fontColor = (255, 255, 255)
 
     def draw(self, window: pygame.Surface, dx=0, dy=0):
@@ -277,17 +278,13 @@ class FNBar(Renderable):
                 ),
             )
 
-            text_surface = self.font.render(
-                f"Press space to reinforce", True, self.fontColor
-            )
+            text_surface = self.font.render(f"按Space无双", True, self.fontColor)
             text_surface.set_colorkey((0, 0, 0))
 
             window.blit(
                 text_surface,
                 (
-                    self.owner_rect.centerx
-                    - text_surface.get_width() // 2
-                    + dx,
+                    self.owner_rect.centerx - text_surface.get_width() // 2 + dx,
                     self.owner_rect.bottom + self.dy + dy,
                 ),
             )
@@ -411,7 +408,7 @@ class DialogBox(Renderable):
         self.portrait = None
         """npc图像更新"""
 
-        self.text = ""
+        self.text = []
         """文本框显示的文字"""
 
         self.cur_page = 0
@@ -465,8 +462,9 @@ class DialogBox(Renderable):
             self.text[self.cur_page], True, self.fontColor
         )  # 创建文本表面
         window.blit(
-            text_surface, (DialogSettings.boxStartX, DialogSettings.boxStartY)
+            text_surface, (DialogSettings.textStartX, DialogSettings.textStartY)
         )  # 绘制文本
+
 
 class ShopBox(Renderable):
     def __init__(
@@ -484,7 +482,7 @@ class ShopBox(Renderable):
         """初始化窗口,字体大小和颜色以及类型"""
 
         self.bg = pygame.Surface(
-            (DialogSettings.boxWidth, DialogSettings.boxHeight), pygame.SRCALPHA
+            (ShopSettings.boxWidth, ShopSettings.boxHeight), pygame.SRCALPHA
         )
         self.bg.fill(bgColor)
         """背景的颜色是bgColor"""
@@ -492,31 +490,47 @@ class ShopBox(Renderable):
         self.portrait = None
         """npc图像更新"""
 
-        self.text = ""
-        """文本框显示的文字"""
+        self.items = {}
+        """文本框的商品"""
 
-        self.cur_page = 0
-        """当前页数"""
+        self.cur_item_index = 0
+        """当前商品"""
 
         self.callback = None
-        """对话显示完毕后调用的函数"""
+        """购物完毕后调用的函数"""
 
-    def set_text(self, text: str):
-        self.text = text.split("，")
-        self.cur_page = 0
+    def set_items(self, items: dict):
+        self.items = items
+        self.cur_item_index = 0
 
     def set_callback(self, callback):
         self.callback = callback
 
-    def next_page(self):
-        self.cur_page += 1
+    def last_item(self):
+        self.cur_item_index = (self.cur_item_index - 1) % len(self.items)
 
-        # Close the box when the text is over
-        if self.cur_page >= len(self.text):
-            self.close()
+    def next_item(self):
+        self.cur_item_index = (self.cur_item_index + 1) % len(self.items)
+
+    def select_item(self):
+        item_name = list(self.items.keys())[self.cur_item_index]
+
+        cost = self.items[item_name]
+
+        if cost < PlayerLevel.value:
+            EventSystem.fire_buff_event("cost", cost)
+            if not hasattr(self, "sound_player"):
+                self.sound_player = SoundPlayer()
+            self.sound_player.play("purchase")
+            if item_name == "防御力+":
+                EventSystem.fire_buff_event("defence", 1)
+            elif item_name == "生命值+":
+                EventSystem.fire_buff_event("hp", 20)
+            elif item_name == "生命值+++":
+                EventSystem.fire_buff_event("hp", 60)
 
     def close(self):
-        self.cur_page = 0
+        self.cur_item_index = 0
         self.set_active(False)
         CurrentState.state = GameState.NORMAL
         if self.callback is not None:
@@ -529,22 +543,36 @@ class ShopBox(Renderable):
         if not self.is_active:
             return
 
-        window.blit(
-            self.bg, (DialogSettings.boxStartX, DialogSettings.boxStartY)
-        )  # 绘制背景
+        window.blit(self.bg, (ShopSettings.boxStartX, ShopSettings.boxStartY))  # 绘制背景
 
         if self.portrait is not None:
             image = pygame.Surface.copy(self.portrait)
             image = pygame.transform.scale(
                 self.portrait, (DialogSettings.npcWidth, DialogSettings.npcHeight)
             )
-            window.blit(
-                image, (DialogSettings.npcCoordX, DialogSettings.npcCoordY)
-            )  # 绘制头像
+            window.blit(image, (DialogSettings.npcCoordX, DialogSettings.npcCoordY))
 
-        text_surface = self.font.render(
-            self.text[self.cur_page], True, self.fontColor
-        )  # 创建文本表面
-        window.blit(
-            text_surface, (DialogSettings.boxStartX, DialogSettings.boxStartY)
-        )  # 绘制文本
+        offset = 0
+        for index, item_name in enumerate(list(self.items.keys())):
+            if index == self.cur_item_index:
+                text_surface = self.font.render(
+                    f"> {item_name}:{self.items[item_name]} <", True, self.fontColor
+                )
+            else:
+                text_surface = self.font.render(
+                    f"{item_name}:{self.items[item_name]}", True, self.fontColor
+                )
+
+            # If item unaffordable then make it more transparent
+            cost = self.items[item_name]
+            if cost >= PlayerLevel.value:
+                text_surface.set_alpha(128)
+
+            window.blit(
+                text_surface,
+                (
+                    ShopSettings.textStartX,
+                    ShopSettings.textStartY + offset * ShopSettings.textSize,
+                ),
+            )
+            offset += 1

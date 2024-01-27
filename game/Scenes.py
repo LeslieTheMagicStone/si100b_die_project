@@ -42,6 +42,11 @@ class Scene:
         self.hide_dialog_box()
         self.append_object(self.dialog_box)
 
+        # Initialize a global shop box
+        self.shop_box = ShopBox()
+        self.hide_shop_box()
+        self.append_object(self.shop_box)
+
         # Initialize game camera
         self.camera = pygame.Rect((0, 0), self.window.get_size())
 
@@ -105,10 +110,22 @@ class Scene:
         if Input.get_key_down(pygame.K_RETURN):
             if self.dialog_box.is_active:
                 self.dialog_box.next_page()
+            elif self.shop_box.is_active:
+                self.shop_box.select_item()
 
         if Input.get_key_down(pygame.K_ESCAPE):
             if self.dialog_box.is_active:
                 self.hide_dialog_box()
+            elif self.shop_box.is_active:
+                self.hide_shop_box()
+
+        if Input.get_key_down(pygame.K_s) or Input.get_key_down(pygame.K_DOWN):
+            if self.shop_box.is_active:
+                self.shop_box.next_item()
+
+        if Input.get_key_down(pygame.K_w) or Input.get_key_down(pygame.K_UP):
+            if self.shop_box.is_active:
+                self.shop_box.last_item()
 
     # Update the collision list of the collidables needing it
     def update_collision_list(self):
@@ -263,8 +280,17 @@ class Scene:
         self.dialog_box.set_callback(callback)
         self.dialog_box.set_active(True)
 
+    def show_shop_box(self, portrait, items, callback):
+        self.shop_box.set_portrait(portrait)
+        self.shop_box.set_items(items)
+        self.shop_box.set_callback(callback)
+        self.shop_box.set_active(True)
+
     def hide_dialog_box(self):
         self.dialog_box.close()
+
+    def hide_shop_box(self):
+        self.shop_box.close()
 
     def handle_player_death_anim(self, dx, dy):
         if self.anim_time <= 10:
@@ -304,11 +330,8 @@ class Scene:
                 self.window.blit(mask_surface, (x, y))
 
         else:
-            BgmPlayer.set_volume(1)
-
-            self.player.rotation = 0
-
-            self.anim_time = 0
+            BgmPlayer.stop()
+            EventSystem.fire_destroy_event(self.player)
             EventSystem.fire_restart_event()
 
         self.anim_time += Time.delta_time
@@ -393,6 +416,12 @@ class SafeRoomScene(Scene):
             DialogNPC(200, 200, "阿柴2号", "准备好了吗？，进入传送门，直面coke老师吧", self.player.rect),
             scene=self,
         )
+        self.shop_npc = generator.generate(
+            ShopNPC(
+                400, 400, "神秘小商贩", {"生命值+": 1, "生命值+++": 2, "防御力+": 3}, self.player.rect
+            ),
+            scene=self,
+        )
 
         # Init obstacles
         rects_to_avoid = [c.rect for c in self._collidables if c.is_rigid] + [
@@ -419,7 +448,8 @@ class SafeRoomScene(Scene):
         if "BossSlayer" in self.player.buffs.keys():
             self.remove_object(self.dialog_npc1)
             self.dialog_npc1 = generator.generate(
-                DialogNPC(300, 300, "阿柴迷弟1号", "你打败了蓝蘑菇coke老师！", self.player.rect), scene=self
+                DialogNPC(300, 300, "阿柴迷弟1号", "你打败了蓝蘑菇coke老师！", self.player.rect),
+                scene=self,
             )
             self.remove_object(self.dialog_npc2)
             self.dialog_npc2 = generator.generate(

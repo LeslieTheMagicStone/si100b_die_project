@@ -96,7 +96,7 @@ class Buffable:
     def add_buff(self, buff_name: str, buff_time: float):
         self.buffs[buff_name] = buff_time
 
-    def delete_Buff(self, buff_name: str):
+    def delete_buff(self, buff_name: str):
         if buff_name in self.buffs:
             del self.buffs[buff_name]
 

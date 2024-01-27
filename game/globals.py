@@ -30,6 +30,9 @@ class CurrentState:
     in_transition_animation = False
 
 
+class PlayerLevel:
+    value = 1
+
 class CollisionChecker:
     _collidables: list[Collidable] = []
 

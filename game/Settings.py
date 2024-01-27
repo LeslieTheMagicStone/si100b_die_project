@@ -43,7 +43,6 @@ class BossSettings:
     coordX = (SceneSettings.tileXnum / 2) * SceneSettings.tileWidth
     coordY = (SceneSettings.tileYnum / 2) * SceneSettings.tileHeight - height * 2
 
-
 class DialogSettings:
     boxWidth = 800
     boxHeight = 180
@@ -289,6 +288,7 @@ class GameEvent:
     EVENT_SWITCH = pygame.USEREVENT + 3
     # Restart the game
     EVENT_RESTART = pygame.USEREVENT + 4
+    # Starts shopping
     EVENT_SHOP = pygame.USEREVENT + 5
     # Player gets hurt
     EVENT_HURT = pygame.USEREVENT + 6

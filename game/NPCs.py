@@ -1,9 +1,10 @@
 # -*- coding:utf-8 -*-
 
 import pygame
-from Projectiles import Causality, RenderIndex
+from Effects import RenderIndex
+from Projectiles import Causality, NPCSettings, NPCSettings, RenderIndex
 from Settings import Causality, RenderIndex
-from UI import Causality, RenderIndex
+from UI import Causality, NPCSettings, RenderIndex
 import generator
 
 from Settings import *
@@ -118,6 +119,26 @@ class DialogNPC(NPC):
             self.trigger_text.set_active(False)
             self.name_text.set_active(False)
 
+class ShopNPC(DialogNPC):
+    def __init__(self, x, y, name, items, player_rect: pygame.Rect, render_index=RenderIndex.npc, speed=NPCSettings.npcSpeed):
+        super().__init__(x, y, name, items, player_rect, render_index, speed)
+        self.items = items
+
+    def handle_dialog(self):
+        distance = Math.distance(self.rect.center, self.player_rect.center)
+        if (
+            distance < NPCSettings.npcTriggerRadius
+            and CurrentState.state != GameState.DIALOG
+        ):
+            self.trigger_text.set_active(True)
+            self.name_text.set_active(True)
+            if Input.get_key_down(pygame.K_RETURN):
+                self.trigger_text.set_active(False)
+                self.name_text.set_active(False)
+                EventSystem.fire_shop_event(self.image, self.text)
+        else:
+            self.trigger_text.set_active(False)
+            self.name_text.set_active(False)
 
 class Monster(NPC, Damageable, Levelable):  #
     def __init__(

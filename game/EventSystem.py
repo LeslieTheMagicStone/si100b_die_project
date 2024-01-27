@@ -21,11 +21,18 @@ class EventSystem:
         pygame.event.post(generate_event)
 
     @staticmethod
-    def fire_dialog_event(portrait, text: str, callback=None):
-        generate_event = pygame.event.Event(
+    def fire_dialog_event(portrait, text, callback=None):
+        dialog_event = pygame.event.Event(
             GameEvent.EVENT_DIALOG, portrait=portrait, text=text, callback=callback
         )
-        pygame.event.post(generate_event)
+        pygame.event.post(dialog_event)
+
+    @staticmethod
+    def fire_shop_event(portrait, items, callback=None):
+        shop_event = pygame.event.Event(
+            GameEvent.EVENT_SHOP, portrait=portrait, items=items, callback=callback
+        )
+        pygame.event.post(shop_event)
 
     @staticmethod
     def fire_hit_event(damage, position):
@@ -41,7 +48,9 @@ class EventSystem:
 
     @staticmethod
     def fire_buff_event(buff_name, buff_time):
-        buff_event = pygame.event.Event(GameEvent.EVENT_BUFF, buff_name=buff_name, buff_time = buff_time)
+        buff_event = pygame.event.Event(
+            GameEvent.EVENT_BUFF, buff_name=buff_name, buff_time=buff_time
+        )
         pygame.event.post(buff_event)
 
     @staticmethod
