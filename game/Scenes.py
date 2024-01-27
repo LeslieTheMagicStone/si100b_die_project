@@ -405,16 +405,28 @@ class SafeRoomScene(Scene):
         self.tile_map = generator.generate(tile_map, scene=self)
 
         # Init portals
-        generator.generate(Portal(123, 123, "Mob Room"), scene=self)
+        self.append_object(Portal(123, 123, "Mob Room"))
+        self.append_object(Portal(400, 600, "Infinite Mob Room"))
 
         # Init npcs
 
         self.dialog_npc1 = generator.generate(
-            DialogNPC(300, 300, "阿柴1号", "完蛋，你被coke老师包围了！", self.player.rect), scene=self
+            DialogNPC(300, 300, "阿柴市民", "完蛋，你被coke老师包围了！", self.player.rect), scene=self
         )
-        self.dialog_npc2 = generator.generate(
-            DialogNPC(200, 200, "阿柴2号", "准备好了吗？，进入传送门，直面coke老师吧", self.player.rect),
-            scene=self,
+        self.dialog_npc2 = self.append_object(
+            DialogNPC(
+                200,
+                200,
+                "阿柴守卫",
+                "这里通往最终boss: 蓝蘑菇coke，准备好了吗？，进入传送门，直面coke老师吧",
+                self.player.rect,
+                speed=0,
+            )
+        )
+        self.dialog_npc2 = self.append_object(
+            DialogNPC(
+                500, 600, "阿柴守卫", "这道门背后有无尽的小coke，...，救命啊！", self.player.rect, speed=0
+            )
         )
         self.shop_npc = generator.generate(
             ShopNPC(
@@ -424,9 +436,11 @@ class SafeRoomScene(Scene):
         )
 
         # Init obstacles
-        rects_to_avoid = [c.rect for c in self._collidables if c.is_rigid] + [
-            p.rect for p in self._portals
-        ]
+        rects_to_avoid = (
+            [c.rect for c in self._collidables if c.is_rigid]
+            + [p.rect for p in self._portals]
+            + [pygame.rect.Rect(400, 400, 100, 100)]
+        )
         self.obstacles = Maps.gen_safe_room_obstacles(rects_to_avoid)
         for obstacle in self.obstacles:
             generator.generate(obstacle, scene=self)
@@ -475,6 +489,9 @@ class MobRoomScene(Scene):
         tile_map = Maps.gen_mob_room_map()
         self.tile_map = generator.generate(tile_map, scene=self)
 
+        # Init portal
+        self.append_object(Portal(400, 500, "last"))
+
         # Init monsters
         monster_count = mob_count + randint(-1, 1)
         for i in range(monster_count):
@@ -513,8 +530,65 @@ class MobRoomScene(Scene):
             if isinstance(c, Monster):
                 break
         else:
-            if len(self._portals) == 0:
+            if len(self._portals) == 1:
                 generator.generate(Portal(150, 150, "next"), scene=self)
+
+    def render(self):
+        # Render background with black
+        background_color = (0, 0, 0)
+        self.window.fill(background_color)
+        # Render renderable objects
+        super().render()
+
+
+class InfiniteMobRoomScene(Scene):
+    def __init__(self, data: SceneTransferData):
+        super().__init__(data)
+
+        # Init tile map
+        tile_map = Maps.gen_mob_room_map()
+        self.tile_map = generator.generate(tile_map, scene=self)
+
+        # Init walls
+        self.walls = Maps.gen_walls(self.tile_map.get_corners())
+        for wall in self.walls:
+            generator.generate(wall, scene=self)
+
+        # Init Portals
+        self.append_object(Portal(400, 400, "Safe Room"))
+
+    def start(self):
+        super().start()
+
+        BgmPlayer.play("wild")
+
+        mob_count = randint(6, 8)
+
+        # Init monsters
+        monsters = [m for m in self._collidables if isinstance(m, Monster)]
+        monster_count = mob_count - len(monsters)
+
+        for i in range(monster_count):
+            [(left, top), (right, bottom)] = self.tile_map.get_corners()
+            x = randint(left + 50, right - 50)
+            y = randint(top + 50, bottom - 50)
+            level = self.player.level + randint(-3, 3)
+            level = max(level, 1)
+            causality = Causality(randint(1, 2))
+            monster = Monster(self.player.rect, x, y, causality=causality, level=level)
+
+            # Avoid spawning monster inside rigid collidables
+            collide_list = monster.rect.collidelist(
+                [c.rect for c in self._collidables if c.is_rigid and c != monster]
+            )
+            if collide_list != -1:
+                i -= 1
+                continue
+
+            generator.generate(monster, scene=self)
+
+    def update(self):
+        super().update()
 
     def render(self):
         # Render background with black

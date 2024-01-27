@@ -224,27 +224,27 @@ def gen_boss_room_obstacles(rects_to_avoid: list[pygame.Rect]) -> list[Block]:
         for j in range(SceneSettings.tileYnum):
             tile_pos = (tile_width * i, tile_height * j)
             # Avoid generating around the rects to avoid
-            if i in [3, SceneSettings.tileXnum - 4] and j in [
-                3,
-                SceneSettings.tileYnum - 4,
+            if i in [4, SceneSettings.tileXnum - 5] and j in [
+                4,
+                SceneSettings.tileYnum - 5,
             ]:
                 obstacles.append(
                     Block(tree, tile_pos[0], tile_pos[1], tile_width, tile_height)
                 )
             elif i in [
-                2,
                 3,
                 4,
-                SceneSettings.tileXnum - 3,
+                5,
                 SceneSettings.tileXnum - 4,
                 SceneSettings.tileXnum - 5,
+                SceneSettings.tileXnum - 6,
             ] and j in [
-                2,
                 3,
                 4,
-                SceneSettings.tileYnum - 3,
+                5,
                 SceneSettings.tileYnum - 4,
                 SceneSettings.tileYnum - 5,
+                SceneSettings.tileYnum - 6,
             ]:
                 obstacles.append(
                     Block(wall, tile_pos[0], tile_pos[1], tile_width, tile_height)

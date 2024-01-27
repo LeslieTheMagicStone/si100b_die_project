@@ -33,8 +33,11 @@ class GameManager:
 
         # Initialize scenes
         self.scenes: list[Scene] = []
+       
         self.scenes.append(MainMenuScene(self.pack_scene_transfer_data("Main Menu")))
+        
         self.scenes.append(SafeRoomScene(self.pack_scene_transfer_data("Safe Room")))
+        
         self.scenes.append(
             MobRoomScene(self.pack_scene_transfer_data("Mob Room"), 5, 1)
         )
@@ -50,6 +53,9 @@ class GameManager:
         )
         self.scenes.append(
             BossRoomScene(self.pack_scene_transfer_data("FINALE: THE BOSS"))
+        )
+        self.scenes.append(
+            InfiniteMobRoomScene(self.pack_scene_transfer_data("Infinite Mob Room"))
         )
 
         # Default scene is main menu
@@ -69,6 +75,8 @@ class GameManager:
     def flush_scene(self, GOTO):
         if GOTO == "next":
             self.flush_scene(self.get_scene_index(self.scene.name) + 1)
+        elif GOTO == "last":
+            self.flush_scene(self.get_scene_index(self.scene.name) - 1)
         elif isinstance(GOTO, str):
             self.flush_scene(self.get_scene_index(GOTO))
         elif isinstance(GOTO, int):

@@ -30,4 +30,4 @@ class Portal(pygame.sprite.Sprite, Renderable, Collidable):
         self.GOTO = GOTO
 
     def draw(self, window: pygame.Surface, dx=0, dy=0):
-        window.blit(self.image, (self.image_pos[0] + dx, self.image_pos[0] + dy))
+        window.blit(self.image, (self.image_pos[0] + dx, self.image_pos[1] + dy))

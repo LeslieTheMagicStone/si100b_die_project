@@ -34,18 +34,35 @@ class NPC(pygame.sprite.Sprite, Collidable, Renderable, MonoBehavior):
         self.image = pygame.transform.scale(
             self.image, (NPCSettings.npcWidth, NPCSettings.npcHeight)
         )
+        # NPCs are initialized with a random scale
+        self.image = pygame.transform.scale_by(self.image, 0.8 + random() * 0.4)
         self.rect = self.image.get_rect()
         self.rect.center = (x, y)
 
         self.speed = speed
         self.name = name
 
+        # Used for flipping
+        # given a random initial state
+        self.face_right = randint(0, 1) == 0
+
     def update(self):
         raise NotImplementedError
 
     def draw(self, window: pygame.Surface, dx=0, dy=0):
+        # Handle flipping
+        if self.velocity[0] > 0 and not self.face_right:
+            self.face_right = True
+        elif self.velocity[0] < 0 and self.face_right:
+            self.face_right = False
+
+        if not self.face_right:
+            final_image = pygame.transform.flip(self.image, True, False)
+        else:
+            final_image = self.image.copy()
+
         if self.is_active:
-            window.blit(self.image, self.rect.move(dx, dy))
+            window.blit(final_image, self.rect.move(dx, dy))
 
 
 class DialogNPC(NPC):
@@ -93,14 +110,14 @@ class DialogNPC(NPC):
         if self.behavior_timer < 0:
             # If is walking, then stop
             if self.is_walking:
-                self.behavior_timer = randint(1, 3)
+                self.behavior_timer = random() * 1.5
                 self.is_walking = False
                 self.velocity = (0, 0)
             # If is stopping, then walk
             else:
-                self.behavior_timer = randint(2, 5)
+                self.behavior_timer = randint(2, 3)
                 self.is_walking = True
-                self.velocity = Math.scale((randint(0, 1), randint(0, 1)), self.speed)
+                self.velocity = Math.scale((randint(-1, 1), randint(-1, 1)), self.speed)
         self.behavior_timer -= Time.delta_time
 
     def handle_dialog(self):
@@ -119,8 +136,18 @@ class DialogNPC(NPC):
             self.trigger_text.set_active(False)
             self.name_text.set_active(False)
 
+
 class ShopNPC(DialogNPC):
-    def __init__(self, x, y, name, items, player_rect: pygame.Rect, render_index=RenderIndex.npc, speed=NPCSettings.npcSpeed):
+    def __init__(
+        self,
+        x,
+        y,
+        name,
+        items,
+        player_rect: pygame.Rect,
+        render_index=RenderIndex.npc,
+        speed=NPCSettings.npcSpeed,
+    ):
         super().__init__(x, y, name, items, player_rect, render_index, speed)
         self.items = items
 
@@ -139,6 +166,7 @@ class ShopNPC(DialogNPC):
         else:
             self.trigger_text.set_active(False)
             self.name_text.set_active(False)
+
 
 class Monster(NPC, Damageable, Levelable):  #
     def __init__(
