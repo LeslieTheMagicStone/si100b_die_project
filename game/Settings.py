@@ -188,9 +188,11 @@ class GamePath:
 
     tree = r".\assets\tiles\tree.png"
 
-    bgm = [r".\assets\bgm\city.mp3", r".\assets\bgm\wild.mp3", r".\assets\bgm\boss.mp3"]
+    bgmRoot = r".\assets\bgm"
 
-    sound = [r".\assets\sound\city.mp3", r".\assets\sound\wild.mp3", r".\assets\sound\boss.mp3"]
+    soundRoot = r".\assets\sound"
+
+    sound = [r".\assets\sound\hit_wall.mp3", r".\assets\sound\wild.mp3", r".\assets\sound\boss.mp3"]
 
     smoke = [
         r".\assets\effects\Smoke\FX001\FX001_01.png",

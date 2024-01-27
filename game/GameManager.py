@@ -51,7 +51,7 @@ class GameManager:
         )
 
         # Default scene is main menu
-        self.flush_scene("Main Menu")
+        self.flush_scene("FINALE: THE BOSS")
 
     """ Necessary game components """
 
