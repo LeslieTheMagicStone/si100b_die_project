@@ -26,6 +26,9 @@ class GameManager:
         self.player = Player(0, 0)
         self.player.reset_pos()
 
+        self.game_reset()
+
+    def game_reset(self):
         # Initialize scenes
         self.scenes: list[Scene] = []
         self.scenes.append(MainMenuScene(self.pack_scene_transfer_data("Main Menu")))
@@ -48,11 +51,6 @@ class GameManager:
         )
 
         # Default scene is main menu
-        self.flush_scene("Main Menu")
-
-    def game_reset(self):
-        # TODO reset the scenes
-
         self.flush_scene("Main Menu")
 
     """ Necessary game components """

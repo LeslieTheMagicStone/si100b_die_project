@@ -272,6 +272,8 @@ class MainMenuScene(Scene):
 
         CurrentState.state = GameState.MAIN_MENU
 
+        BgmPlayer.play("city")
+
     def update(self):
         super().update()
         # A warm-up mini game,
@@ -361,6 +363,8 @@ class SafeRoomScene(Scene):
                 DialogNPC(200, 200, "阿柴迷妹2号", "太强了！", self.player.rect),
                 scene=self,
             )
+        
+        BgmPlayer.play("city")
 
     def render(self):
         # Fill the background with black
@@ -406,6 +410,8 @@ class MobRoomScene(Scene):
 
     def start(self):
         super().start()
+
+        BgmPlayer.play("wild")
 
     def update(self):
         super().update()
@@ -474,6 +480,8 @@ class BossRoomScene(Scene):
 
     def start(self):
         super().start()
+
+        BgmPlayer.play("boss")
 
     def update(self):
         super().update()
