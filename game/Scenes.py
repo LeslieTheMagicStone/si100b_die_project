@@ -206,8 +206,8 @@ class Scene:
         if obj not in self._objects:
             return
 
-        if hasattr(obj, "childs"):
-            for child in obj.childs:
+        if hasattr(obj, "children"):
+            for child in obj.children:
                 self.remove_object(child)
 
         self._objects.remove(obj)

@@ -71,7 +71,10 @@ class Player(
         self.bullet_causality = Causality.NORMAL
         # Flipping related
         self.face_right = True
+        # Reinforce related
         self.reinforcing = 0
+        # Init sound player
+        self.sound_player = SoundPlayer()
 
     def reset_pos(self, x=WindowSettings.width // 2, y=WindowSettings.height // 2):
         self.rect.center = (x, y)
@@ -156,6 +159,7 @@ class Player(
         if Input.get_key_down(pygame.K_SPACE) and self.ready == 1:
             self.finished()
             self.add_Buff("Reinforce", 5)
+            self.sound_player.play("ws")
 
     def handle_tools(self):
         if Input.get_key_down(pygame.K_j) and "Causality" in self.Buff_state.keys():
@@ -172,8 +176,6 @@ class Player(
         if self.fire_timer > 0:
             self.fire_timer -= Time.delta_time
             return
-
-        keys = pygame.key.get_pressed()
 
         dx = dy = 0
 
@@ -219,6 +221,7 @@ class Player(
     def handle_damage(self, damage):
         if "Invulnerable" in self.Buff_state.keys():
             return 0
+
         decrease = 0
         if "Reinforce" in self.Buff_state.keys():
             decrease = 2
@@ -244,6 +247,10 @@ class Player(
                 damage = self.handle_damage(stay.attack)
                 EventSystem.fire_hurt_event(damage)
 
+            if isinstance(stay, EnemyBullet):
+                damage = self.handle_damage(stay.damage)
+                EventSystem.fire_hurt_event(damage)
+
     def level_up(self):
         super().level_up()
 
@@ -253,7 +260,7 @@ class Player(
 
     def draw(self, window: pygame.Surface, dx=0, dy=0):
         # Handle invulnerable animation
-        if "Invulnerable" in self.Buff_state.keys():
+        if "Invulnerable" in self.Buff_state:
             time = self.Buff_state["Invulnerable"]
             alpha = (2 - int(time * 100) % 2) * 127
             self.image.set_alpha(alpha)
@@ -269,13 +276,20 @@ class Player(
         if not self.face_right:
             final_image = pygame.transform.flip(self.image, flip_x=True, flip_y=False)
         else:
-            final_image = self.image
+            final_image = self.image.copy()
+
+        # Handle reinforce animation
+        if "Reinforce" in self.Buff_state:
+            mask = pygame.mask.from_surface(final_image)
+            mask_surface = mask.to_surface(setcolor=(200, 124, 124, 255), unsetcolor=(0,0,0,0))
+            final_image.blit(mask_surface, (0, 0), special_flags=pygame.BLEND_RGBA_ADD)
+            final_image = pygame.transform.scale_by(final_image, 1.2)
 
         # Calculate top-left corner of the picture separately
         # because that of the rect has been changed when scaling
         offset = -8 if self.face_right else 8
         image_pos_x = (
-            self.rect.centerx - self.image.get_width() // 2 + offset
+            self.rect.centerx - final_image.get_width() // 2 + offset
         )  # tiny offset to look more realistic
-        image_pos_y = self.rect.centery - self.image.get_height() // 2
+        image_pos_y = self.rect.centery - final_image.get_height() // 2
         window.blit(final_image, (image_pos_x + dx, image_pos_y + dy))

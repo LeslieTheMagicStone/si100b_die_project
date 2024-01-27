@@ -192,7 +192,11 @@ class GamePath:
 
     soundRoot = r".\assets\sound"
 
-    sound = [r".\assets\sound\hit_wall.mp3", r".\assets\sound\wild.mp3", r".\assets\sound\boss.mp3"]
+    sound = [
+        r".\assets\sound\hit_wall.mp3",
+        r".\assets\sound\wild.mp3",
+        r".\assets\sound\boss.mp3",
+    ]
 
     smoke = [
         r".\assets\effects\Smoke\FX001\FX001_01.png",
@@ -225,12 +229,21 @@ class HealthBarSettings:
     width = 60
     height = 10
     dy = 10
+    fontSize = 15
 
 
 class ExpBarSettings:
     width = 60
     height = 5
     dy = 20
+
+
+class BossHealthBarSettings:
+    width = WindowSettings.width - 100
+    height = 30
+    fontSize = 35
+    startX = WindowSettings.width // 2 - width // 2
+    startY = WindowSettings.height - height - 20
 
 
 class RenderIndex:
@@ -262,11 +275,12 @@ class GameState(Enum):
     DIALOG = 1
     FLUSHING = 2
     MAIN_MENU = 3
+    PAUSE = 4
 
 
 class GameEvent:
     EVENT_BATTLE = pygame.USEREVENT + 1
-    # Starts a
+    # Starts a dialog
     EVENT_DIALOG = pygame.USEREVENT + 2
     # Go to another scene
     EVENT_SWITCH = pygame.USEREVENT + 3

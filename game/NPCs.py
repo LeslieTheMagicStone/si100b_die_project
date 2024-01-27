@@ -67,7 +67,7 @@ class DialogNPC(NPC):
         # Moving behavior
         self.is_walking = True
         self.behavior_timer = 1
-        self.childs = []
+        self.children = []
 
     def start(self):
         super().start()
@@ -75,10 +75,10 @@ class DialogNPC(NPC):
         # Init trigger text
         self.trigger_text = generator.generate(DialogIcon(self.rect, "按Enter对话", dy=20))
         self.trigger_text.set_active(False)
-        self.childs.append(self.trigger_text)
+        self.children.append(self.trigger_text)
         self.name_text = generator.generate(DialogIcon(self.rect, self.name, dy=0))
         self.name_text.set_active(False)
-        self.childs.append(self.name_text)
+        self.children.append(self.name_text)
 
     def update(self):
         self.handle_dialog()
@@ -166,17 +166,17 @@ class Monster(NPC, Damageable, Levelable):  #
         self.is_dead = False
         self.cur_hp = self.max_hp
 
-        self.childs = []
+        self.children = []
 
     def start(self):
         # Init health bar
         self.health_bar = HealthBar(self, self.rect)
         generator.generate(self.health_bar)
-        self.childs.append(self.health_bar)
+        self.children.append(self.health_bar)
         # Init exp bar
         self.exp_bar = ExpBar(self, self.rect)
         generator.generate(self.exp_bar)
-        self.childs.append(self.exp_bar)
+        self.children.append(self.exp_bar)
 
     def update(self):
         if self.is_dead:
@@ -203,7 +203,7 @@ class Monster(NPC, Damageable, Levelable):  #
     def handle_death(self):
         EventSystem.fire_destroy_event(self)
         EventSystem.fire_buff_event("exp", self.exp)
-        EventSystem.fire_buff_event("rein", self.exp)
+        EventSystem.fire_buff_event("rein", 1)
 
     def handle_collisions(self):
         # if len(self.collisions_enter) != 0:
@@ -268,6 +268,10 @@ class Boss(Monster):
 
     def start(self):
         EffectManager.generate("boss", self.rect.centerx, self.rect.centery)
+
+        # Init boss health bar
+        self.health_bar = generator.generate(BossHealthBar(self))
+        self.children.append(self.health_bar)
 
     def handle_death(self):
         super().handle_death()

@@ -5,6 +5,8 @@ from Math import *
 from Attributes import *
 from globals import Time
 from EventSystem import *
+from BgmPlayer import SoundPlayer
+from random import random, randint
 
 
 class Projectile(pygame.sprite.Sprite, MonoBehavior, Renderable, Collidable):
@@ -65,6 +67,8 @@ class Tools(Projectile):
 
 
 class Bullet(Projectile):
+    sound_player: SoundPlayer = None
+
     def __init__(
         self,
         x,
@@ -75,6 +79,10 @@ class Bullet(Projectile):
     ) -> None:
         super().__init__(x, y)
         self.need_collision_list = True
+
+        # Init class sound player
+        if Bullet.sound_player is None:
+            Bullet.sound_player = SoundPlayer()
 
         self.image = pygame.image.load(GamePath.normal_bullet[attribute.value])
         self.image = pygame.transform.scale(
@@ -87,15 +95,21 @@ class Bullet(Projectile):
         self.damage = damage
         self.causality = attribute
 
+        # Chance to play sound when hitting wall
+        self.sound_chance = 0
+
     def update(self):
         super().update()
 
-        # Collide rigid ones then destroy it self
+        # Collide rigid ones then destroy itself
         for other in self.collisions_enter:
             if other.is_rigid and other.layer != "Player":
                 self.set_active(False)
                 EventSystem.fire_destroy_event(self)
                 if other.layer == "Default":
+                    # Play hit wall sound
+                    if random() < self.sound_chance:
+                        Bullet.sound_player.play("hit_wall")
                     EventSystem.fire_hit_event(0, self.rect.center)
 
     def draw(self, window: pygame.Surface, dx=0, dy=0):
@@ -128,6 +142,58 @@ class Big_bullet(Bullet):
         self.velocity = velocity
         self.damage = damage
         self.attribute = attribute
+
+        self.sound_chance = 1
+
+    def draw(self, window: pygame.Surface, dx=0, dy=0):
+        window.blit(self.image, self.rect.move(dx, dy))
+
+
+class EnemyBullet(Projectile):
+    sound_player: SoundPlayer = None
+
+    def __init__(
+        self,
+        x,
+        y,
+        velocity,
+        damage,
+        attribute=Causality.NORMAL,
+    ) -> None:
+        super().__init__(x, y)
+        self.need_collision_list = True
+
+        # Init class sound player
+        if EnemyBullet.sound_player is None:
+            EnemyBullet.sound_player = SoundPlayer()
+
+        self.image = pygame.image.load(GamePath.normal_bullet[attribute.value])
+        self.image = pygame.transform.scale(
+            self.image, (SceneSettings.tileWidth // 2, SceneSettings.tileHeight // 2)
+        )
+        self.rect = self.image.get_rect()
+        self.rect.center = (x, y)
+
+        self.velocity = velocity
+        self.damage = damage
+        self.causality = attribute
+
+        # Chance to play sound when hitting wall
+        self.sound_chance = 1
+
+    def update(self):
+        super().update()
+
+        # Collide rigid ones then destroy itself
+        for other in self.collisions_enter:
+            if other.is_rigid and other.layer != "Enemy":
+                self.set_active(False)
+                EventSystem.fire_destroy_event(self)
+                if other.layer == "Default":
+                    # Play hit wall sound
+                    if random() < self.sound_chance:
+                        Bullet.sound_player.play("hit_wall")
+                    EventSystem.fire_hit_event(0, self.rect.center)
 
     def draw(self, window: pygame.Surface, dx=0, dy=0):
         window.blit(self.image, self.rect.move(dx, dy))

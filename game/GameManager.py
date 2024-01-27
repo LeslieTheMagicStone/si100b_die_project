@@ -51,7 +51,7 @@ class GameManager:
         )
 
         # Default scene is main menu
-        self.flush_scene("FINALE: THE BOSS")
+        self.flush_scene("Mob Room")
 
     """ Necessary game components """
 

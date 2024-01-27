@@ -1,6 +1,8 @@
 import pygame
 from Attributes import *
+from Attributes import Damageable
 from Settings import *
+from Settings import HealthBarSettings, RenderIndex
 from globals import *
 from EventSystem import *
 
@@ -26,7 +28,7 @@ class HealthBar(Renderable):
 
         self.dy = dy
 
-        self.font = pygame.font.Font(None, 15)
+        self.font = pygame.font.Font(None, HealthBarSettings.fontSize)
         self.fontColor = (255, 255, 255)
 
     def draw(self, window: pygame.Surface, dx=0, dy=0):
@@ -73,6 +75,65 @@ class HealthBar(Renderable):
             (
                 self.owner_rect.centerx - text_surface.get_width() // 2 + dx,
                 self.owner_rect.y - self.height - self.dy + dy,
+            ),
+        )
+
+
+class BossHealthBar(Renderable):
+    def __init__(
+        self,
+        owner: Damageable,
+        width=BossHealthBarSettings.width,
+        height=BossHealthBarSettings.height,
+        startX=BossHealthBarSettings.startX,
+        startY=BossHealthBarSettings.startY,
+        render_index=RenderIndex.ui,
+        is_active=True,
+    ):
+        super().__init__(render_index, is_active)
+        self.owner = owner
+        self.width = width
+        self.height = height
+        self.x = startX
+        self.y = startY
+        self.render_index = render_index
+        self.is_active = is_active
+
+        self.font = pygame.font.Font(None, BossHealthBarSettings.fontSize)
+        self.fontColor = (255, 255, 255)
+
+    def draw(self, window: pygame.Surface, dx=0, dy=0):
+        if not self.is_active:
+            return
+
+        if self.owner.max_hp != 0:
+            # Calculate the width of the health bar based on current health
+            bar_fill = (self.owner.cur_hp / self.owner.max_hp) * self.width
+        else:
+            bar_fill = self.width
+            print(f"Zero max hp: {self.owner}")
+
+        # Draw the background bar
+        pygame.draw.rect(
+            window,
+            (255, 0, 0),
+            (
+                self.x,
+                self.y,
+                self.width,
+                self.height,
+            ),
+        )
+
+        # Draw the filled portion of the health bar
+        pygame.draw.rect(
+            window,
+            (0, 255, 0),
+            (
+                self.x,
+                self.y,
+                bar_fill,
+                self.height,
             ),
         )
 
@@ -217,7 +278,7 @@ class FNBar(Renderable):
             )
 
             text_surface = self.font.render(
-                f"Press space reinforce", True, self.fontColor
+                f"Press space to reinforce", True, self.fontColor
             )
             text_surface.set_colorkey((0, 0, 0))
 
@@ -225,7 +286,6 @@ class FNBar(Renderable):
                 text_surface,
                 (
                     self.owner_rect.centerx
-                    - self.width // 2
                     - text_surface.get_width() // 2
                     + dx,
                     self.owner_rect.bottom + self.dy + dy,

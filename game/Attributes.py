@@ -83,7 +83,7 @@ class Levelable:
         self.cur_exp = 0
 
     def get_max_exp(self, level):
-        return int((math.log(level) + 1) * 10)
+        return (level + 1) * 10
 
 
 class Buffable:
