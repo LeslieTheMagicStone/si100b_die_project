@@ -106,15 +106,15 @@ class reinforcable:
         self.accumulative = 0
         self.max_ = 10
         self.cur_ = 0
-        self.readly = 0
+        self.ready = 0
 
     def add_accumulative(self, added_value):
-        if self.readly != 1:
+        if self.ready != 1:
             self.cur_ += added_value
         if self.cur_ >= self.max_:
             self.cur_ = self.max_
-            self.readly = 1
+            self.ready = 1
 
     def finished(self):
         self.cur_ = 0
-        self.readly = 0
+        self.ready = 0
