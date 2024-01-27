@@ -304,6 +304,8 @@ class Scene:
                 self.window.blit(mask_surface, (x, y))
 
         else:
+            BgmPlayer.set_volume(1)
+
             self.player.rotation = 0
 
             self.anim_time = 0

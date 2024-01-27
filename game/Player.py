@@ -81,6 +81,8 @@ class Player(
         self.sound_player = SoundPlayer()
         # Init hurt player to play hurt sound
         self.hurt_player = SoundPlayer()
+        # Init mask player to play change mask sound
+        self.mask_player = SoundPlayer()
         # Rolling related
         self.roll_cd = 2
         self.roll_cd_timer = 0
@@ -132,8 +134,7 @@ class Player(
 
         if self.anim_timer < 0:
             self.anim_timer = self.anim_interval_second
-            self.anim_frame += 1
-            self.anim_frame = min(self.anim_frame, self.anim_frame % len(self.images))
+            self.anim_frame = (self.anim_frame + 1) % len(self.images)
             self.image = self.images[self.anim_frame]
 
         self.anim_timer -= Time.delta_time
@@ -173,6 +174,8 @@ class Player(
     def handle_tools(self):
         if Input.get_key_down(pygame.K_e) and "Causality" in self.buffs.keys():
             self.bullet_causality = Causality((self.bullet_causality.value + 1) % 3)
+            path = f"mask{randint(1,3)}"
+            self.mask_player.play(path)
 
     def handle_fire(self):
         if CurrentState.state == GameState.DIALOG:
@@ -190,11 +193,11 @@ class Player(
 
         if Input.get_key(pygame.K_UP):
             dy -= 1
-        if Input.get_key(pygame.K_DOWN):
+        elif Input.get_key(pygame.K_DOWN):
             dy += 1
         if Input.get_key(pygame.K_LEFT):
             dx -= 1
-        if Input.get_key(pygame.K_RIGHT):
+        elif Input.get_key(pygame.K_RIGHT):
             dx += 1
 
         if ((dx, dy) != (0, 0)) and self.bullet_type == 0:
@@ -241,10 +244,10 @@ class Player(
 
         if self.is_rolling:
             if self.rolling_timer > 0:
-                self.rotation += 1440 * Time.delta_time
+                self.rotation += 710 * Time.delta_time
                 self.rolling_timer -= Time.delta_time
                 # Player gets a speed boost when rolling
-                self.velocity = Math.scale(self.velocity, 3)
+                self.velocity = Math.scale(self.velocity, 2.5)
             else:
                 self.rolling_timer = 0
                 self.rotation = self.original_rotation
@@ -300,7 +303,6 @@ class Player(
         self.attack += self.level % 2
 
     def draw(self, window: pygame.Surface, dx=0, dy=0):
-        self.image = self.images[0]
         if CurrentState.state != GameState.GAME_OVER:
             # Handle running animation
             self.handle_running_animation()

@@ -24,7 +24,7 @@ class PlayerSettings:
     width = 60
     height = 55
     hp = 20
-    attack = 4
+    attack = 3
     defence = 1
     money = 100
     animIntervalSecond = 0.1
@@ -181,6 +181,8 @@ class GamePath:
     portal = r".\assets\background\portal.png"
 
     tree = r".\assets\tiles\tree.png"
+
+    mask = r".\assets\tools\mask.png"
 
     bgmRoot = r".\assets\bgm"
 

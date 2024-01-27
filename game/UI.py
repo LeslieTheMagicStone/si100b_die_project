@@ -467,3 +467,84 @@ class DialogBox(Renderable):
         window.blit(
             text_surface, (DialogSettings.boxStartX, DialogSettings.boxStartY)
         )  # 绘制文本
+
+class ShopBox(Renderable):
+    def __init__(
+        self,
+        fontSize: int = DialogSettings.textSize,
+        fontColor: tuple[int, int, int] = (255, 255, 255),
+        bgColor: tuple[int, int, int, int] = (0, 0, 0, 150),
+    ):
+        Renderable.__init__(self, render_index=100)
+
+        self.fontSize = fontSize
+        self.fontColor = fontColor
+        self.font = pygame.font.Font(GamePath.youYuan, self.fontSize)
+
+        """初始化窗口,字体大小和颜色以及类型"""
+
+        self.bg = pygame.Surface(
+            (DialogSettings.boxWidth, DialogSettings.boxHeight), pygame.SRCALPHA
+        )
+        self.bg.fill(bgColor)
+        """背景的颜色是bgColor"""
+
+        self.portrait = None
+        """npc图像更新"""
+
+        self.text = ""
+        """文本框显示的文字"""
+
+        self.cur_page = 0
+        """当前页数"""
+
+        self.callback = None
+        """对话显示完毕后调用的函数"""
+
+    def set_text(self, text: str):
+        self.text = text.split("，")
+        self.cur_page = 0
+
+    def set_callback(self, callback):
+        self.callback = callback
+
+    def next_page(self):
+        self.cur_page += 1
+
+        # Close the box when the text is over
+        if self.cur_page >= len(self.text):
+            self.close()
+
+    def close(self):
+        self.cur_page = 0
+        self.set_active(False)
+        CurrentState.state = GameState.NORMAL
+        if self.callback is not None:
+            self.callback()
+
+    def set_portrait(self, portrait):
+        self.portrait = portrait
+
+    def draw(self, window: pygame.Surface, dx=0, dy=0):
+        if not self.is_active:
+            return
+
+        window.blit(
+            self.bg, (DialogSettings.boxStartX, DialogSettings.boxStartY)
+        )  # 绘制背景
+
+        if self.portrait is not None:
+            image = pygame.Surface.copy(self.portrait)
+            image = pygame.transform.scale(
+                self.portrait, (DialogSettings.npcWidth, DialogSettings.npcHeight)
+            )
+            window.blit(
+                image, (DialogSettings.npcCoordX, DialogSettings.npcCoordY)
+            )  # 绘制头像
+
+        text_surface = self.font.render(
+            self.text[self.cur_page], True, self.fontColor
+        )  # 创建文本表面
+        window.blit(
+            text_surface, (DialogSettings.boxStartX, DialogSettings.boxStartY)
+        )  # 绘制文本

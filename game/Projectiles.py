@@ -38,7 +38,7 @@ class Tools(Projectile):
         super().__init__(x, y)
         self.need_collision_list = True
 
-        self.image = pygame.image.load(GamePath.player[0])
+        self.image = pygame.image.load(GamePath.mask)
         self.image = pygame.transform.scale(
             self.image, (SceneSettings.tileWidth * 2, SceneSettings.tileHeight * 2)
         )

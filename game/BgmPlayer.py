@@ -41,7 +41,6 @@ class BgmPlayer:
         bgm_file_paths = [
             f"{bgm_root}\{name}.mp3",
             f"{bgm_root}\{name}.wav",
-            f"{bgm_root}\{name}.mp3",
         ]
         for bgm_file_path in bgm_file_paths:
             # Check if the file path exists in the cache
@@ -89,7 +88,6 @@ class SoundPlayer:
         sound_file_paths = [
             f"{sound_root}\{name}.mp3",
             f"{sound_root}\{name}.wav",
-            f"{sound_root}\{name}.mp3",
         ]
         for sound_file_path in sound_file_paths:
             # Check if the file path exists in the cache
