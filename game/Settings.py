@@ -190,6 +190,8 @@ class GamePath:
 
     bgm = [r".\assets\bgm\city.mp3", r".\assets\bgm\wild.mp3", r".\assets\bgm\boss.mp3"]
 
+    sound = [r".\assets\sound\city.mp3", r".\assets\sound\wild.mp3", r".\assets\sound\boss.mp3"]
+
     smoke = [
         r".\assets\effects\Smoke\FX001\FX001_01.png",
         r".\assets\effects\Smoke\FX001\FX001_02.png",
