@@ -1,10 +1,12 @@
 import pygame
+import os
 from Settings import *
 
 
 class BgmPlayer:
     current_bgm = None
     is_playing = False
+    bgm_cache = {}
 
     @classmethod
     def play(cls, name, loop=-1):
@@ -31,16 +33,29 @@ class BgmPlayer:
 
     @staticmethod
     def get_bgm_path(name):
-        bgm_root = r".\assets\bgm"
-        bgm_file_path = f"{bgm_root}\{name}.mp3"
-        if bgm_file_path in GamePath.bgm:
-            return bgm_file_path
-        else:
-            return None
+        bgm_root = GamePath.soundRoot
+        bgm_file_paths = [
+            f"{bgm_root}\{name}.mp3",
+            f"{bgm_root}\{name}.wav",
+            f"{bgm_root}\{name}.mp3",
+        ]
+        for bgm_file_path in bgm_file_paths:
+            # Check if the file path exists in the cache
+            if bgm_file_path in SoundPlayer.bgm_cache:
+                return BgmPlayer.bgm_cache[bgm_file_path]
+        
+        for bgm_file_path in bgm_file_paths:
+            # Perform the file existence check
+            if os.path.isfile(bgm_file_path):
+                SoundPlayer.bgm_cache[bgm_file_path] = bgm_file_path
+                return bgm_file_path
+                    
+        return None
 
 
 class SoundPlayer:
     channels = []
+    bgm_cache  = {}
 
     def __init__(self):
         self.channel = pygame.mixer.Channel(len(self.channels))
@@ -63,9 +78,21 @@ class SoundPlayer:
 
     @staticmethod
     def get_sound_path(name):
-        sound_root = r".\assets\sound"
-        sound_file_path = f"{sound_root}\{name}.mp3"
-        if sound_file_path in GamePath.sound:
-            return sound_file_path
-        else:
-            return None
+        sound_root = GamePath.soundRoot
+        sound_file_paths = [
+            f"{sound_root}\{name}.mp3",
+            f"{sound_root}\{name}.wav",
+            f"{sound_root}\{name}.mp3",
+        ]
+        for sound_file_path in sound_file_paths:
+            # Check if the file path exists in the cache
+            if sound_file_path in SoundPlayer.bgm_cache:
+                return SoundPlayer.bgm_cache[sound_file_path]
+        
+        for sound_file_path in sound_file_paths:
+            # Perform the file existence check
+            if os.path.isfile(sound_file_path):
+                SoundPlayer.bgm_cache[sound_file_path] = sound_file_path
+                return sound_file_path
+                    
+        return None

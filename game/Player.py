@@ -153,7 +153,7 @@ class Player(
             self.bullet_type = (self.bullet_type + 1) % 2
 
     def handle_reinforce(self):
-        if Input.get_key_down(pygame.K_SPACE) and self.readly == 1:
+        if Input.get_key_down(pygame.K_SPACE) and self.ready == 1:
             self.finished()
             self.add_Buff("Reinforce", 5)
 
