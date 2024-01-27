@@ -25,6 +25,10 @@ class BgmPlayer:
         else:
             print(f"Error: BGM file '{name}' not found")
 
+    @staticmethod
+    def set_volume(value):
+        pygame.mixer.music.set_volume(value)
+
     @classmethod
     def stop(cls):
         pygame.mixer.music.stop()
@@ -41,13 +45,13 @@ class BgmPlayer:
         ]
         for bgm_file_path in bgm_file_paths:
             # Check if the file path exists in the cache
-            if bgm_file_path in SoundPlayer.bgm_cache:
-                return BgmPlayer.bgm_cache[bgm_file_path]
+            if bgm_file_path in SoundPlayer.sound_cache:
+                return BgmPlayer.bgm_cache[name]
         
         for bgm_file_path in bgm_file_paths:
             # Perform the file existence check
             if os.path.isfile(bgm_file_path):
-                SoundPlayer.bgm_cache[bgm_file_path] = bgm_file_path
+                BgmPlayer.bgm_cache[name] = bgm_file_path
                 return bgm_file_path
                     
         return None
@@ -55,7 +59,7 @@ class BgmPlayer:
 
 class SoundPlayer:
     channels = []
-    bgm_cache  = {}
+    sound_cache  = {}
 
     def __init__(self):
         self.channel = pygame.mixer.Channel(len(self.channels))
@@ -73,6 +77,9 @@ class SoundPlayer:
         else:
             print(f"Error: sound file '{name}' not found")
 
+    def set_volume(self, value):
+        self.channel.set_volume(value)
+
     def stop(self):
         self.channel.stop()
 
@@ -86,13 +93,13 @@ class SoundPlayer:
         ]
         for sound_file_path in sound_file_paths:
             # Check if the file path exists in the cache
-            if sound_file_path in SoundPlayer.bgm_cache:
-                return SoundPlayer.bgm_cache[sound_file_path]
+            if sound_file_path in SoundPlayer.sound_cache:
+                return SoundPlayer.sound_cache[name]
         
         for sound_file_path in sound_file_paths:
             # Perform the file existence check
             if os.path.isfile(sound_file_path):
-                SoundPlayer.bgm_cache[sound_file_path] = sound_file_path
+                SoundPlayer.sound_cache[name] = sound_file_path
                 return sound_file_path
                     
         return None

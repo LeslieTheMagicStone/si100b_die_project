@@ -24,7 +24,7 @@ class PlayerSettings:
     width = 60
     height = 55
     hp = 20
-    attack = 20
+    attack = 4
     defence = 1
     money = 100
     animIntervalSecond = 0.1
@@ -35,12 +35,6 @@ class NPCSettings:
     npcWidth = 60
     npcHeight = 60
     npcTriggerRadius = 100
-
-
-class NPCType(Enum):
-    DIALOG = 1
-    MONSTER = 2
-    SHOP = 3
 
 
 class BossSettings:
@@ -255,12 +249,12 @@ class BossHealthBarSettings:
 
 class RenderIndex:
     portal = 0
-    player = 1
+    player = 5
     monster = 2
     npc = 4
     block = -1
     tileMap = -2
-    projectile = 3
+    projectile = 6
     ui = 10
     effect = 9
 
@@ -282,6 +276,7 @@ class GameState(Enum):
     DIALOG = 1
     FLUSHING = 2
     MAIN_MENU = 3
+    GAME_OVER = 4
 
 
 class GameEvent:
@@ -303,3 +298,5 @@ class GameEvent:
     EVENT_DESTROY = pygame.USEREVENT + 9
     # Add buff to player
     EVENT_BUFF = pygame.USEREVENT + 10
+    # When player is dead
+    EVENT_GAME_OVER = pygame.USEREVENT + 11

@@ -158,8 +158,8 @@ def gen_Tool_room_map() -> TileMap:
     return TileMap(map_obj)
 
 
-def gen_boss_room_map()->TileMap:
-    tile_images = [pygame.image.load(tile) for tile in GamePath.bossTiles]
+def gen_boss_room_map() -> TileMap:
+    tile_images = [pygame.image.load(tile) for tile in GamePath.snowTiles]
     tile_width = SceneSettings.tileWidth
     tile_height = SceneSettings.tileHeight
     tile_images = [
@@ -209,7 +209,8 @@ def gen_wild_obstacle():
 
 
 def gen_boss_room_obstacles(rects_to_avoid: list[pygame.Rect]) -> list[Block]:
-    image = pygame.image.load(GamePath.bossWall)
+    wall = pygame.image.load(GamePath.bossWall)
+    tree = pygame.image.load(GamePath.tree)
 
     obstacles = []
     tile_width = SceneSettings.tileWidth
@@ -223,11 +224,29 @@ def gen_boss_room_obstacles(rects_to_avoid: list[pygame.Rect]) -> list[Block]:
         for j in range(SceneSettings.tileYnum):
             tile_pos = (tile_width * i, tile_height * j)
             # Avoid generating around the rects to avoid
-            if random() < SceneSettings.obstacleDensity and all(
-                Math.distance(rect.center, tile_pos) > null_radius
-                for rect in rects_to_avoid
-            ):
+            if i in [3, SceneSettings.tileXnum - 4] and j in [
+                3,
+                SceneSettings.tileYnum - 4,
+            ]:
                 obstacles.append(
-                    Block(image, tile_pos[0], tile_pos[1], tile_width, tile_height)
+                    Block(tree, tile_pos[0], tile_pos[1], tile_width, tile_height)
+                )
+            elif i in [
+                2,
+                3,
+                4,
+                SceneSettings.tileXnum - 3,
+                SceneSettings.tileXnum - 4,
+                SceneSettings.tileXnum - 5,
+            ] and j in [
+                2,
+                3,
+                4,
+                SceneSettings.tileYnum - 3,
+                SceneSettings.tileYnum - 4,
+                SceneSettings.tileYnum - 5,
+            ]:
+                obstacles.append(
+                    Block(wall, tile_pos[0], tile_pos[1], tile_width, tile_height)
                 )
     return obstacles

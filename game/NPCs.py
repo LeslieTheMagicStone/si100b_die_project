@@ -178,6 +178,8 @@ class Monster(NPC, Damageable, Levelable):  #
         self.exp_bar = ExpBar(self, self.rect)
         generator.generate(self.exp_bar)
         self.children.append(self.exp_bar)
+        # Play generate anim
+        EffectManager.generate("teleport", self.rect.centerx, self.rect.centery)
 
     def update(self):
         if self.is_dead:
@@ -270,10 +272,14 @@ class Boss(Monster):
         # It has three phases
         self.remaining_lives = 2
 
-        # combat related
+        # Combat related
         self.behavior_timer = 0
-        self.states = {"ATTACK": 2, "STOP": 1}
+        self.states = {"ATTACK": 2, "STOP": 1, "SUMMON": 3}
         self.cur_state = "STOP"
+
+        # This gives player rein during combat when boss gets enough damage
+        self.rein_progress = 0
+        self.rein_damage = 50
 
     def start(self):
         EffectManager.generate("boss", self.rect.centerx, self.rect.centery)
@@ -297,7 +303,7 @@ class Boss(Monster):
             pass
         elif self.cur_state == "ATTACK":
             # Calculate basic data
-        
+
             x = self.rect.centerx
             y = self.rect.centery
             direction = Math.normalize(
@@ -317,11 +323,16 @@ class Boss(Monster):
 
             # Phase 2 gets upgrades
             noise = (randint(-2, 2), randint(-2, 2))
-            generator.generate(
-                EnemyBigBullet(
-                    x, y, Math.add(Math.scale(velocity, 0.5), noise), 5, Causality.FIRE
+            if randint(0, 4) == 0:
+                generator.generate(
+                    EnemyBigBullet(
+                        x,
+                        y,
+                        Math.add(Math.scale(velocity, 0.5), noise),
+                        5,
+                        Causality.FIRE,
+                    )
                 )
-            )
 
             if self.remaining_lives == 1:
                 return
@@ -333,6 +344,41 @@ class Boss(Monster):
                 generator.generate(
                     EnemyLaserGenerator(x, y, 10, 5, Causality(randint(0, 2)))
                 )
+        elif self.cur_state == "SUMMON":
+            self.velocity = (random() * randint(-5, 5), random() * randint(-5, 5))
+            distance_coords = Math.minus(self.player_rect.center, self.rect.center)
+            distance = Math.norm(distance_coords)
+
+            if randint(0, 20) == 0 and distance >= 200:
+                x = random() * distance_coords[0] + self.rect.centerx
+                y = random() * distance_coords[1] + self.rect.centery
+                # Avoid spawning monster inside rigid collidables
+                for i in range(5):
+                    rand_level = randint(5, 10) + (2 - self.remaining_lives) * 5
+                    monster = Monster(
+                        self.player_rect,
+                        x,
+                        y,
+                        causality=Causality(randint(1, 2)),
+                        level=rand_level,
+                    )
+                    if not CollisionChecker.check_rigids(monster.rect):
+                        generator.generate(monster)
+                        break
+
+    def handle_damage(self, damage):
+        damage = max(1, damage - self.defence)
+        self.cur_hp = max(0, self.cur_hp - damage)
+
+        self.rein_progress += damage
+        if self.rein_progress >= self.rein_damage:
+            self.rein_progress = 0
+            EventSystem.fire_buff_event("rein", 1)
+
+        if self.cur_hp == 0:
+            self.handle_death()
+
+        return damage
 
     def handle_death(self):
         # If it has remaining life, just revive

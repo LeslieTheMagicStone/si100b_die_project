@@ -57,6 +57,8 @@ class Scene:
         # 加入史
         self.reinforce = FNBar(self.player, self.player.rect, dy=20)
         self.append_object(self.reinforce)
+        # Used for player death anim
+        self.anim_time = 0
 
     # Start function called each time the scene is entered
     def start(self):
@@ -80,6 +82,10 @@ class Scene:
 
     # Update function called once per frame
     def update(self):
+        # No update when game over
+        if CurrentState.state == GameState.GAME_OVER:
+            return
+
         # Call start/update functions of mono behaviours
         self.update_mono_behaviors()
 
@@ -201,6 +207,8 @@ class Scene:
         if isinstance(obj, Portal):
             self._portals.append(obj)
 
+        CollisionChecker._collidables = self._collidables
+
     # Remove object from scene object list
     def remove_object(self, obj):
         if obj not in self._objects:
@@ -224,6 +232,8 @@ class Scene:
         if isinstance(obj, Portal):
             self._portals.remove(obj)
 
+        CollisionChecker._collidables = self._collidables
+
     # Sort renderables from the lowest index to the highest
     def sort_renderables(self):
         self._renderables = sorted(self._renderables, key=lambda x: x.render_index)
@@ -244,6 +254,9 @@ class Scene:
         for renderable in self._renderables:
             renderable.draw(self.window, offset[0], offset[1])
 
+        if CurrentState.state == GameState.GAME_OVER:
+            self.handle_player_death_anim(offset[0], offset[1])
+
     def show_dialog_box(self, portrait, text, callback):
         self.dialog_box.set_portrait(portrait)
         self.dialog_box.set_text(text)
@@ -252,6 +265,51 @@ class Scene:
 
     def hide_dialog_box(self):
         self.dialog_box.close()
+
+    def handle_player_death_anim(self, dx, dy):
+        if self.anim_time <= 10:
+            # Fade out music
+            BgmPlayer.set_volume((1 - self.anim_time / 10) * 0.9)
+
+            # Fade out, but keep the player opaque
+            black_alpha = min(255, self.anim_time / 3 * 255)
+            # Create a reverse mask for the player
+            mask = pygame.mask.from_surface(self.player.rendered_image)
+            mask_surface = mask.to_surface(
+                setcolor=(0, 0, 0, 0), unsetcolor=(0, 0, 0, 255)
+            )
+            # Fill other place with dark color
+            fill_surface = pygame.Surface(
+                (self.window.get_width(), self.window.get_height()), pygame.SRCALPHA
+            )
+            fill_surface.fill((0, 0, 0))
+            fill_surface.set_alpha(black_alpha)
+            x = self.player.image_pos_x + dx
+            y = self.player.image_pos_y + dy
+            fill_surface.blit(mask_surface, (x, y), special_flags=pygame.BLEND_RGBA_MIN)
+            self.window.blit(fill_surface, (0, 0))
+
+            if 3 < self.anim_time <= 3.5:
+                # Rotate the player
+                degree = (self.anim_time - 3) / 0.5 * 90
+                self.player.rotation = degree
+            elif 3.5 <= self.anim_time <= 5:
+                self.player.rotation = 90
+            elif 5 <= self.anim_time <= 10:
+                self.player.rotation = 90
+                mask_alpha = min(255, (self.anim_time - 5) / 2 * 255)
+                mask_surface = mask.to_surface(
+                    setcolor=(0, 0, 0, mask_alpha), unsetcolor=(0, 0, 0, 255)
+                )
+                self.window.blit(mask_surface, (x, y))
+
+        else:
+            self.player.rotation = 0
+
+            self.anim_time = 0
+            EventSystem.fire_restart_event()
+
+        self.anim_time += Time.delta_time
 
 
 class MainMenuScene(Scene):
@@ -356,14 +414,14 @@ class SafeRoomScene(Scene):
             "teleport", self.player.rect.centerx, self.player.rect.centery - 20
         )
 
-        if "BossSlayer" in self.player.Buff_state.keys():
+        if "BossSlayer" in self.player.buffs.keys():
             self.remove_object(self.dialog_npc1)
             self.dialog_npc1 = generator.generate(
-                DialogNPC(300, 300, "阿柴迷弟1号", "你打败了boss！", self.player.rect), scene=self
+                DialogNPC(300, 300, "阿柴迷弟1号", "你打败了蓝蘑菇coke老师！", self.player.rect), scene=self
             )
             self.remove_object(self.dialog_npc2)
             self.dialog_npc2 = generator.generate(
-                DialogNPC(200, 200, "阿柴迷妹2号", "太强了！", self.player.rect),
+                DialogNPC(200, 200, "阿柴迷妹2号", "你是我的超人！", self.player.rect),
                 scene=self,
             )
 
@@ -454,7 +512,7 @@ class ToolRoomScence(Scene):
     def update(self):
         super().update()
 
-        if "Causality" in self.player.Buff_state.keys():
+        if "Causality" in self.player.buffs.keys():
             if len(self._portals) == 0:
                 generator.generate(Portal(150, 150, "next"), scene=self)
 
@@ -477,6 +535,11 @@ class BossRoomScene(Scene):
         for wall in self.walls:
             generator.generate(wall, scene=self)
 
+        # Init obstacles
+        self.obstacles = Maps.gen_boss_room_obstacles([])
+        for obs in self.obstacles:
+            self.append_object(obs)
+
         # Init boss
         self.boss = Boss(self.player.rect, BossSettings.coordX, BossSettings.coordY)
         self.append_object(self.boss)
@@ -485,6 +548,7 @@ class BossRoomScene(Scene):
         super().start()
 
         BgmPlayer.play("boss")
+        pygame.mixer.music.set_volume(0.9)
 
         # For transition animation
         self.anim_time = 0
@@ -503,8 +567,8 @@ class BossRoomScene(Scene):
 
         super().update()
 
-        if len(self._portals) == 0:
-            generator.generate(Portal(150, 150, "Main Menu"), scene=self)
+        if self.boss not in self._objects and len(self._portals) == 0:
+            generator.generate(Portal(250, 250, "Main Menu"), scene=self)
 
     def render(self):
         # Render background with black
@@ -528,4 +592,6 @@ class BossRoomScene(Scene):
             image = pygame.transform.scale_by(image, 2)
             x = self.window.get_width() // 2 - image.get_width() // 2
             y = self.window.get_height() // 2 - image.get_height() // 2
+
+            self.window.fill((0, 0, 0, 200))
             self.window.blit(image, (x, y))

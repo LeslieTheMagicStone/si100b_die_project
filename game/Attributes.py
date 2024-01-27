@@ -89,16 +89,16 @@ class Levelable:
 class Buffable:
     def __init__(self) -> None:
         # 角色的BUFF状态，初始啥都是空，空即为最初的状态
-        self.Buff_state = {}
+        self.buffs = {}
 
     """buff_time 为此BUFF对应的时间，-1代表永久"""
 
-    def add_Buff(self, buff_name: str, buff_time: float):
-        self.Buff_state[buff_name] = buff_time
+    def add_buff(self, buff_name: str, buff_time: float):
+        self.buffs[buff_name] = buff_time
 
     def delete_Buff(self, buff_name: str):
-        if buff_name in self.Buff_state:
-            del self.Buff_state[buff_name]
+        if buff_name in self.buffs:
+            del self.buffs[buff_name]
 
 
 class reinforcable:

@@ -29,6 +29,9 @@ class GameManager:
         self.game_reset()
 
     def game_reset(self):
+        # Reset player hp to max
+        self.player.cur_hp = self.player.max_hp
+
         # Initialize scenes
         self.scenes: list[Scene] = []
         self.scenes.append(MainMenuScene(self.pack_scene_transfer_data("Main Menu")))
@@ -51,7 +54,7 @@ class GameManager:
         )
 
         # Default scene is main menu
-        self.flush_scene("FINALE: THE BOSS")
+        self.flush_scene("Main Menu")
 
     """ Necessary game components """
 
@@ -104,6 +107,11 @@ class GameManager:
         # Call update function of current game state
         self.scene.update()
 
+        if Input.get_key(pygame.K_LSHIFT):
+            self.time_scale = 2
+        else:
+            self.time_scale = 1
+
     def handle_events(self):
         # Get events of current frame
         events = pygame.event.get()
@@ -149,7 +157,11 @@ class GameManager:
                 EffectManager.generate("smoke", position[0], position[1])
             elif event.type == GameEvent.EVENT_BUFF:
                 # Add buff to player
-                self.player.add_Buff(event.buff_name, event.buff_time)
+                self.player.add_buff(event.buff_name, event.buff_time)
+            elif event.type == GameEvent.EVENT_GAME_OVER:
+                # Set current gamestate to gameover
+                CurrentState.state = GameState.GAME_OVER
+
 
     def pack_scene_transfer_data(self, name) -> SceneTransferData:
         return SceneTransferData(player=self.player, window=self.window, name=name)

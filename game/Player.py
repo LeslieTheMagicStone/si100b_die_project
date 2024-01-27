@@ -50,6 +50,10 @@ class Player(
         self.anim_frame = 0
         self.image = self.images[0]
         self.anim_timer = 0
+        self.rendered_image = self.image.copy()
+        self.image_pos_x = 0
+        self.image_pos_y = 0
+        self.rotation = 0
 
         self.rect = self.image.get_rect()
         self.rect.center = (x, y)
@@ -75,6 +79,14 @@ class Player(
         self.reinforcing = 0
         # Init sound player
         self.sound_player = SoundPlayer()
+        # Init hurt player to play hurt sound
+        self.hurt_player = SoundPlayer()
+        # Rolling related
+        self.roll_cd = 2
+        self.roll_cd_timer = 0
+        self.is_rolling = False
+        self.rolling_time = 0.5
+        self.rolling_timer = 0
 
     def reset_pos(self, x=WindowSettings.width // 2, y=WindowSettings.height // 2):
         self.rect.center = (x, y)
@@ -85,34 +97,34 @@ class Player(
         self.handle_tools()
         self.handle_fire()
         self.handle_movement()
+        self.handle_roll()
         self.handle_collisions()
-        self.handle_animation()
         self.handle_reinforce()
 
     def update_buffs(self):
         to_be_deleted = []
-        for buff, buff_time in self.Buff_state.items():
+        for buff, buff_time in self.buffs.items():
             if buff_time > 0:
-                self.Buff_state[buff] -= Time.delta_time
+                self.buffs[buff] -= Time.delta_time
             elif buff_time <= 0 and buff_time != -1:
                 to_be_deleted.append(buff)
 
         for buff in to_be_deleted:
             self.delete_Buff(buff)
 
-    def add_Buff(self, buff_name: str, buff_time: float):
-        super().add_Buff(buff_name, buff_time)
+    def add_buff(self, buff_name: str, buff_time: float):
+        super().add_buff(buff_name, buff_time)
 
         if buff_name == "exp":
             self.add_exp(buff_time)
 
         if buff_name == "rein":
-            self.add_accumulative(buff_time + 1)
+            self.add_accumulative(buff_time)
 
         self.delete_Buff("exp")
         self.delete_Buff("rein")
 
-    def handle_animation(self):
+    def handle_running_animation(self):
         # Only need to play run animation when running
         if self.velocity == (0, 0):
             self.image = self.images[2]
@@ -146,23 +158,20 @@ class Player(
 
         velocity = Math.scale(Math.normalize((dx, dy)), self.speed)
 
-        if Input.get_key(pygame.K_LSHIFT):
-            velocity = Math.scale(velocity, 2)
-
         self.velocity = velocity
 
     def handle_bullet_change(self):
-        if Input.get_key_down(pygame.K_u):
+        if Input.get_key_down(pygame.K_q):
             self.bullet_type = (self.bullet_type + 1) % 2
 
     def handle_reinforce(self):
         if Input.get_key_down(pygame.K_SPACE) and self.ready == 1:
             self.finished()
-            self.add_Buff("Reinforce", 5)
+            self.add_buff("Reinforce", 5)
             self.sound_player.play("ws")
 
     def handle_tools(self):
-        if Input.get_key_down(pygame.K_j) and "Causality" in self.Buff_state.keys():
+        if Input.get_key_down(pygame.K_e) and "Causality" in self.buffs.keys():
             self.bullet_causality = Causality((self.bullet_causality.value + 1) % 3)
 
     def handle_fire(self):
@@ -170,7 +179,7 @@ class Player(
             return
 
         increase = 0
-        if "Reinforce" in self.Buff_state.keys():
+        if "Reinforce" in self.buffs.keys():
             increase = 2
 
         if self.fire_timer > 0:
@@ -218,17 +227,49 @@ class Player(
 
             self.fire_timer = self.fire_cd
 
+    def handle_roll(self):
+        self.roll_cd_timer -= Time.delta_time
+
+        if Input.get_key_down(pygame.K_LSHIFT):
+            if self.roll_cd_timer <= 0:
+                self.roll_cd_timer = self.roll_cd
+
+                self.is_rolling = True
+                self.rolling_timer = self.rolling_time
+                self.original_rotation = self.rotation
+                self.add_buff("Invulnerable", self.rolling_time)
+
+        if self.is_rolling:
+            if self.rolling_timer > 0:
+                self.rotation += 1440 * Time.delta_time
+                self.rolling_timer -= Time.delta_time
+                # Player gets a speed boost when rolling
+                self.velocity = Math.scale(self.velocity, 3)
+            else:
+                self.rolling_timer = 0
+                self.rotation = self.original_rotation
+                self.is_rolling = False
+
     def handle_damage(self, damage):
-        if "Invulnerable" in self.Buff_state.keys():
+        if "Invulnerable" in self.buffs:
             return 0
 
         decrease = 0
-        if "Reinforce" in self.Buff_state.keys():
+        if "Reinforce" in self.buffs:
             decrease = 2
+
         damage = max(0, 1 - decrease, damage - self.defence - decrease)
         self.cur_hp = max(0, self.cur_hp - damage)
+
+        if self.cur_hp == 0:
+            EventSystem.fire_game_over_event()
+
         EventSystem.fire_hurt_event(damage)
-        self.add_Buff("Invulnerable", 0.5)
+
+        self.hurt_player.set_volume(0.2)
+        self.hurt_player.play("hurt")
+
+        self.add_buff("Invulnerable", 0.5)
 
         return damage
 
@@ -259,9 +300,13 @@ class Player(
         self.attack += self.level % 2
 
     def draw(self, window: pygame.Surface, dx=0, dy=0):
+        self.image = self.images[0]
+        if CurrentState.state != GameState.GAME_OVER:
+            # Handle running animation
+            self.handle_running_animation()
         # Handle invulnerable animation
-        if "Invulnerable" in self.Buff_state:
-            time = self.Buff_state["Invulnerable"]
+        if "Invulnerable" in self.buffs:
+            time = self.buffs["Invulnerable"]
             alpha = (2 - int(time * 100) % 2) * 127
             self.image.set_alpha(alpha)
         else:
@@ -279,17 +324,23 @@ class Player(
             final_image = self.image.copy()
 
         # Handle reinforce animation
-        if "Reinforce" in self.Buff_state:
+        if "Reinforce" in self.buffs:
             mask = pygame.mask.from_surface(final_image)
-            mask_surface = mask.to_surface(setcolor=(200, 124, 124, 255), unsetcolor=(0,0,0,0))
+            mask_surface = mask.to_surface(
+                setcolor=(200, 124, 124, 255), unsetcolor=(0, 0, 0, 0)
+            )
             final_image.blit(mask_surface, (0, 0), special_flags=pygame.BLEND_RGBA_ADD)
             final_image = pygame.transform.scale_by(final_image, 1.2)
+
+        # Handle rotation
+        final_image = pygame.transform.rotate(final_image, self.rotation)
 
         # Calculate top-left corner of the picture separately
         # because that of the rect has been changed when scaling
         offset = -8 if self.face_right else 8
-        image_pos_x = (
+        self.image_pos_x = (
             self.rect.centerx - final_image.get_width() // 2 + offset
         )  # tiny offset to look more realistic
-        image_pos_y = self.rect.centery - final_image.get_height() // 2
-        window.blit(final_image, (image_pos_x + dx, image_pos_y + dy))
+        self.image_pos_y = self.rect.centery - final_image.get_height() // 2
+        window.blit(final_image, (self.image_pos_x + dx, self.image_pos_y + dy))
+        self.rendered_image = final_image.copy()

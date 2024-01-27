@@ -57,7 +57,7 @@ class Tools(Projectile):
                 EventSystem.fire_destroy_event(self)
                 EventSystem.fire_dialog_event(
                     self.image,
-                    "这是一个古老的面具，上面蕴藏着神秘的力量，可以让玩家拥有转换能力，（按J切换子弹元素：普通/冰/火）",
+                    "这是一个古老的面具，上面蕴藏着神秘的力量，可以让玩家拥有转换能力，（按E切换子弹元素：普通/冰/火）",
                     callback=self.add_causility_buff,
                 )
 
@@ -256,7 +256,7 @@ class EnemyLaserGenerator(EnemyBullet):
         self.rect = self.image.get_rect()
         self.rect.center = (x, y)
         # Generate Enemy Laser
-        self.generate_cd = 0.2
+        self.generate_cd = 0.4
         self.generate_timer = 0
         
 
