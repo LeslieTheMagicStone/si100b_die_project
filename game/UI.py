@@ -132,10 +132,10 @@ class ExpBar(Renderable):
             ),
         )
 
-        # Draw the level text
         text_surface = self.font.render(
             f"Lv. {self.owner.level}", True, self.fontColor, (0, 0, 0)
         )
+        text_surface.set_colorkey((0, 0, 0))
         window.blit(
             text_surface,
             (
@@ -146,6 +146,91 @@ class ExpBar(Renderable):
                 self.owner_rect.y - self.height - self.dy + dy,
             ),
         )
+
+
+class FNBar(Renderable):
+    def __init__(
+        self,
+        owner: reinforcable,
+        owner_rect: pygame.Rect,
+        width=ExpBarSettings.width,
+        height=ExpBarSettings.height,
+        render_index=RenderIndex.ui,
+        is_active=True,
+        dy=ExpBarSettings.dy,
+    ):
+        super().__init__(render_index, is_active)
+
+        self.owner = owner
+        self.owner_rect = owner_rect
+
+        self.width = width
+        self.height = height
+
+        self.dy = dy
+
+        self.font = pygame.font.Font(None, 25)
+        self.fontColor = (255, 255, 255)
+
+    def draw(self, window: pygame.Surface, dx=0, dy=0):
+        if not self.is_active:
+            return
+
+        # Calculate the width of the bar based on current health
+        bar_fill = (self.owner.cur_ / self.owner.max_) * self.width
+
+        # Draw the background bar
+        pygame.draw.rect(
+            window,
+            (122, 122, 122),
+            (
+                self.owner_rect.centerx - self.width // 2 + dx,
+                self.owner_rect.y - self.height - self.dy + dy,
+                self.width,
+                self.height,
+            ),
+        )
+
+        # Draw the filled portion of the bar
+        if bar_fill < self.width:
+            pygame.draw.rect(
+                window,
+                (200, 200, 200),
+                (
+                    self.owner_rect.centerx - self.width // 2 + dx,
+                    self.owner_rect.y - self.height - self.dy + dy,
+                    bar_fill,
+                    self.height,
+                ),
+            )
+
+        else:
+            pygame.draw.rect(
+                window,
+                (250, 0, 0),
+                (
+                    self.owner_rect.centerx - self.width // 2 + dx,
+                    self.owner_rect.y - self.height - self.dy + dy,
+                    bar_fill,
+                    self.height,
+                ),
+            )
+
+            text_surface = self.font.render(
+                f"Press space reinforce", True, self.fontColor
+            )
+            text_surface.set_colorkey((0, 0, 0))
+
+            window.blit(
+                text_surface,
+                (
+                    self.owner_rect.centerx
+                    - self.width // 2
+                    - text_surface.get_width() // 2
+                    + dx,
+                    self.owner_rect.bottom + self.dy + dy,
+                ),
+            )
 
 
 class DialogIcon(Renderable):
@@ -236,11 +321,10 @@ class Text(Renderable):
         # Fade out state
         else:
             alpha = 255 * ((self.life_time - 0) / (self.duration / 3))
-        
+
         self.image.set_alpha(alpha)
 
         window.blit(self.image, self.rect)
-
 
 
 class DialogBox(Renderable):

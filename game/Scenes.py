@@ -54,6 +54,9 @@ class Scene:
         # Append player exp bar
         self.exp_bar = ExpBar(self.player, self.player.rect, dy=30)
         self.append_object(self.exp_bar)
+        # 加入史
+        self.reinforce = FNBar(self.player, self.player.rect, dy=20)
+        self.append_object(self.reinforce)
 
     # Start function called each time the scene is entered
     def start(self):
