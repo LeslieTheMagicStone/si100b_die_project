@@ -24,7 +24,7 @@ class PlayerSettings:
     width = 60
     height = 55
     hp = 20
-    attack = 2
+    attack = 20
     defence = 1
     money = 100
     animIntervalSecond = 0.1
@@ -217,6 +217,13 @@ class GamePath:
         r".\assets\effects\Smoke\FX002\FX002_08.png",
     ]
 
+    bossTransition = [
+        r".\assets\transition\boss\1.png",
+        r".\assets\transition\boss\2.png",
+        r".\assets\transition\boss\3.png",
+        r".\assets\transition\boss\4.png",
+    ]
+
 
 class PortalSettings:
     width = 160
@@ -275,7 +282,6 @@ class GameState(Enum):
     DIALOG = 1
     FLUSHING = 2
     MAIN_MENU = 3
-    PAUSE = 4
 
 
 class GameEvent:

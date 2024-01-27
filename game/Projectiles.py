@@ -3,10 +3,12 @@ import pygame
 from Settings import *
 from Math import *
 from Attributes import *
+from Settings import Causality
 from globals import Time
 from EventSystem import *
 from BgmPlayer import SoundPlayer
 from random import random, randint
+import generator
 
 
 class Projectile(pygame.sprite.Sprite, MonoBehavior, Renderable, Collidable):
@@ -75,7 +77,7 @@ class Bullet(Projectile):
         y,
         velocity,
         damage,
-        attribute=Causality.NORMAL,
+        causality=Causality.NORMAL,
     ) -> None:
         super().__init__(x, y)
         self.need_collision_list = True
@@ -84,7 +86,7 @@ class Bullet(Projectile):
         if Bullet.sound_player is None:
             Bullet.sound_player = SoundPlayer()
 
-        self.image = pygame.image.load(GamePath.normal_bullet[attribute.value])
+        self.image = pygame.image.load(GamePath.normal_bullet[causality.value])
         self.image = pygame.transform.scale(
             self.image, (SceneSettings.tileWidth // 4, SceneSettings.tileHeight // 4)
         )
@@ -93,7 +95,7 @@ class Bullet(Projectile):
 
         self.velocity = velocity
         self.damage = damage
-        self.causality = attribute
+        self.causality = causality
 
         # Chance to play sound when hitting wall
         self.sound_chance = 0
@@ -123,11 +125,11 @@ class Big_bullet(Bullet):
         y,
         velocity,
         damage,
-        attribute=Causality.NORMAL,
+        causality=Causality.NORMAL,
     ) -> None:
         super().__init__(x, y, velocity, damage)
 
-        self.image = pygame.image.load(GamePath.big_bullet[attribute.value])
+        self.image = pygame.image.load(GamePath.big_bullet[causality.value])
         self.image = pygame.transform.scale(
             self.image,
             (ProjectileSettings.bigBulletWidth, ProjectileSettings.bigBulletHeight),
@@ -141,7 +143,7 @@ class Big_bullet(Bullet):
 
         self.velocity = velocity
         self.damage = damage
-        self.attribute = attribute
+        self.causality = causality
 
         self.sound_chance = 1
 
@@ -158,7 +160,7 @@ class EnemyBullet(Projectile):
         y,
         velocity,
         damage,
-        attribute=Causality.NORMAL,
+        causality=Causality.NORMAL,
     ) -> None:
         super().__init__(x, y)
         self.need_collision_list = True
@@ -167,7 +169,7 @@ class EnemyBullet(Projectile):
         if EnemyBullet.sound_player is None:
             EnemyBullet.sound_player = SoundPlayer()
 
-        self.image = pygame.image.load(GamePath.normal_bullet[attribute.value])
+        self.image = pygame.image.load(GamePath.normal_bullet[causality.value])
         self.image = pygame.transform.scale(
             self.image, (SceneSettings.tileWidth // 2, SceneSettings.tileHeight // 2)
         )
@@ -176,7 +178,7 @@ class EnemyBullet(Projectile):
 
         self.velocity = velocity
         self.damage = damage
-        self.causality = attribute
+        self.causality = causality
 
         # Chance to play sound when hitting wall
         self.sound_chance = 1
@@ -192,8 +194,87 @@ class EnemyBullet(Projectile):
                 if other.layer == "Default":
                     # Play hit wall sound
                     if random() < self.sound_chance:
-                        Bullet.sound_player.play("hit_wall")
+                        EnemyBullet.sound_player.play("hit_wall")
                     EventSystem.fire_hit_event(0, self.rect.center)
 
     def draw(self, window: pygame.Surface, dx=0, dy=0):
         window.blit(self.image, self.rect.move(dx, dy))
+
+
+class EnemyBigBullet(EnemyBullet):
+    def __init__(self, x, y, velocity, damage, causality=Causality.NORMAL) -> None:
+        super().__init__(x, y, velocity, damage, causality)
+        self.image = pygame.transform.scale_by(self.image, 2)
+        self.rect = self.image.get_rect()
+        self.rect.center = (x, y)
+
+    def on_destroy(self):
+        # When destroyed init several small bullets
+
+        for direction in [(-1, -1), (-1, 1), (1, -1), (1, 1)]:
+            generator.generate(
+                EnemyBullet(
+                    self.rect.centerx,
+                    self.rect.centery,
+                    Math.scale(direction, ProjectileSettings.bulletSpeed),
+                    5,
+                    self.causality,
+                )
+            )
+
+
+class EnemyLaser(EnemyBullet):
+    def __init__(self, x, y, velocity, damage, causality=Causality.NORMAL) -> None:
+        super().__init__(x, y, velocity, damage)
+
+        self.image = pygame.image.load(GamePath.big_bullet[causality.value])
+        self.image = pygame.transform.scale(
+            self.image,
+            (ProjectileSettings.bigBulletWidth, ProjectileSettings.bigBulletHeight),
+        )
+        self.image = pygame.transform.rotate(
+            self.image, Math.angle_degrees(velocity) - 90
+        )
+
+        self.rect = self.image.get_rect()
+        self.rect.center = (x, y)
+
+        self.velocity = velocity
+        self.damage = damage
+        self.causality = causality
+
+        self.sound_chance = 1
+
+
+class EnemyLaserGenerator(EnemyBullet):
+    def __init__(self, x, y, damage, life_time=10, causality=Causality.NORMAL) -> None:
+        super().__init__(x, y, velocity=(0, 0), damage=damage, causality=causality)
+        # Life time related
+        self.life_time = life_time
+        # Image and rect
+        self.image = pygame.transform.scale_by(self.image, 3)
+        self.rect = self.image.get_rect()
+        self.rect.center = (x, y)
+        # Generate Enemy Laser
+        self.generate_cd = 0.2
+        self.generate_timer = 0
+        
+
+    def update(self):
+        super().update()
+
+        self.generate_timer -= Time.delta_time
+
+        if self.generate_timer <= 0:
+            self.generate_timer = self.generate_cd
+
+            for direction in [(-1, -1), (-1, 1), (1, -1), (1, 1)]:
+                generator.generate(
+                    EnemyLaser(
+                        self.rect.centerx,
+                        self.rect.centery,
+                        Math.scale(direction, ProjectileSettings.bulletSpeed // 2),
+                        5,
+                        self.causality,
+                    )
+                )

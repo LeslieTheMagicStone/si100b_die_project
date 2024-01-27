@@ -206,6 +206,9 @@ class Scene:
         if obj not in self._objects:
             return
 
+        if hasattr(obj, "on_destroy") and callable(obj.on_destroy):
+            obj.on_destroy()
+
         if hasattr(obj, "children"):
             for child in obj.children:
                 self.remove_object(child)
@@ -363,7 +366,7 @@ class SafeRoomScene(Scene):
                 DialogNPC(200, 200, "阿柴迷妹2号", "太强了！", self.player.rect),
                 scene=self,
             )
-        
+
         BgmPlayer.play("city")
 
     def render(self):
@@ -483,7 +486,21 @@ class BossRoomScene(Scene):
 
         BgmPlayer.play("boss")
 
+        # For transition animation
+        self.anim_time = 0
+
     def update(self):
+        if CurrentState.in_transition_animation:
+            if self.anim_time == 0:
+                pygame.mixer.music.set_volume(0.3)
+                sp = SoundPlayer()
+                sp.play("transition")
+            elif self.anim_time >= 14:
+                pygame.mixer.music.set_volume(1)
+                CurrentState.in_transition_animation = False
+            self.anim_time += Time.delta_time
+            return
+
         super().update()
 
         if len(self._portals) == 0:
@@ -495,3 +512,20 @@ class BossRoomScene(Scene):
         self.window.fill(background_color)
         # Render renderable objects
         super().render()
+
+        # Handle transition anim
+        if CurrentState.in_transition_animation:
+            image = pygame.image.load(GamePath.bossTransition[3])
+            if 0 <= self.anim_time < 2:
+                image = pygame.image.load(GamePath.bossTransition[0])
+            elif 2 <= self.anim_time <= 7:
+                image = pygame.image.load(GamePath.bossTransition[1])
+            elif 7 <= self.anim_time <= 10.5:
+                image = pygame.image.load(GamePath.bossTransition[2])
+            elif 10.5 <= self.anim_time <= 15:
+                image = pygame.image.load(GamePath.bossTransition[3])
+
+            image = pygame.transform.scale_by(image, 2)
+            x = self.window.get_width() // 2 - image.get_width() // 2
+            y = self.window.get_height() // 2 - image.get_height() // 2
+            self.window.blit(image, (x, y))

@@ -51,7 +51,7 @@ class GameManager:
         )
 
         # Default scene is main menu
-        self.flush_scene("Mob Room")
+        self.flush_scene("FINALE: THE BOSS")
 
     """ Necessary game components """
 
@@ -98,34 +98,8 @@ class GameManager:
             Input.key_down[key] = False
         # Handle event several times to fetch all events
         # (I know it seems dirty, but it works)
-        self.handle_events()
-        self.handle_events()
-        self.handle_events()
-        self.handle_events()
-        self.handle_events()
-        self.handle_events()
-        self.handle_events()
-        self.handle_events()
-        self.handle_events()
-        self.handle_events()
-        self.handle_events()
-        self.handle_events()
-        self.handle_events()
-        self.handle_events()
-        self.handle_events()
-        self.handle_events()
-        self.handle_events()
-        self.handle_events()
-        self.handle_events()
-        self.handle_events()
-        self.handle_events()
-        self.handle_events()
-        self.handle_events()
-        self.handle_events()
-        self.handle_events()
-        self.handle_events()
-        self.handle_events()
-        self.handle_events()
+        for i in range(20):
+            self.handle_events()
 
         # Call update function of current game state
         self.scene.update()

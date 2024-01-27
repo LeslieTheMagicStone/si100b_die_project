@@ -18,4 +18,5 @@ class Input:
     
 class CurrentState:
     state = GameState.NORMAL
+    in_transition_animation = False
     

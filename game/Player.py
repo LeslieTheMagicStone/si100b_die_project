@@ -198,7 +198,7 @@ class Player(
                     self.rect.centery,
                     bullet_velocity,
                     self.attack + increase,
-                    attribute=self.bullet_causality,
+                    causality=self.bullet_causality,
                 )
             )
 
@@ -212,7 +212,7 @@ class Player(
                     self.rect.centery,
                     bullet_velocity,
                     (self.attack + increase * 2) * 6,
-                    attribute=self.bullet_causality,
+                    causality=self.bullet_causality,
                 )
             )
 

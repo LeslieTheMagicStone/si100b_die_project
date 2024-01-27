@@ -15,6 +15,7 @@ from UI import *
 from globals import *
 from Effects import *
 from random import randint
+from enum import Enum
 
 
 class NPC(pygame.sprite.Sprite, Collidable, Renderable, MonoBehavior):
@@ -266,6 +267,14 @@ class Boss(Monster):
         resize_amount = [-self.rect.width // 4, -self.rect.height // 4]
         self.rect.inflate_ip(resize_amount[0], resize_amount[1])
 
+        # It has three phases
+        self.remaining_lives = 2
+
+        # combat related
+        self.behavior_timer = 0
+        self.states = {"ATTACK": 2, "STOP": 1}
+        self.cur_state = "STOP"
+
     def start(self):
         EffectManager.generate("boss", self.rect.centerx, self.rect.centery)
 
@@ -273,7 +282,70 @@ class Boss(Monster):
         self.health_bar = generator.generate(BossHealthBar(self))
         self.children.append(self.health_bar)
 
+    def update(self):
+        super().update()
+
+        self.behavior_timer -= Time.delta_time
+
+        # If behavior timer to time, change state randomly
+        if self.behavior_timer <= 0:
+            index = randint(0, len(self.states.keys()) - 1)
+            self.cur_state = list(self.states.keys())[index]
+            self.behavior_timer = self.states[self.cur_state]
+
+        if self.cur_state == "STOP":
+            pass
+        elif self.cur_state == "ATTACK":
+            # Calculate basic data
+        
+            x = self.rect.centerx
+            y = self.rect.centery
+            direction = Math.normalize(
+                Math.minus(self.player_rect.center, self.rect.center)
+            )
+            velocity = Math.scale(direction, ProjectileSettings.bulletSpeed)
+
+            generator.generate(EnemyBullet(x, y, velocity, 5, Causality.ICE))
+
+            if randint(0, 5) == 0:
+                generator.generate(
+                    EnemyBigBullet(x, y, Math.scale(velocity, 0.5), 5, Causality.ICE)
+                )
+
+            if self.remaining_lives == 2:
+                return
+
+            # Phase 2 gets upgrades
+            noise = (randint(-2, 2), randint(-2, 2))
+            generator.generate(
+                EnemyBigBullet(
+                    x, y, Math.add(Math.scale(velocity, 0.5), noise), 5, Causality.FIRE
+                )
+            )
+
+            if self.remaining_lives == 1:
+                return
+
+            # Phase 1 gets more upgrades
+            self.states["ATTACK"] = 3
+            self.states["STOP"] = 0.5
+            if randint(0, 10) == 0:
+                generator.generate(
+                    EnemyLaserGenerator(x, y, 10, 5, Causality(randint(0, 2)))
+                )
+
     def handle_death(self):
+        # If it has remaining life, just revive
+        if self.remaining_lives > 0:
+            self.remaining_lives -= 1
+            self.cur_hp = self.max_hp
+
+            # Last life play transition anim
+            if self.remaining_lives == 0:
+                CurrentState.in_transition_animation = True
+
+            return
+
         super().handle_death()
 
         EventSystem.fire_buff_event("BossSlayer", -1)
