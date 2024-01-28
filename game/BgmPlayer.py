@@ -46,25 +46,28 @@ class BgmPlayer:
             # Check if the file path exists in the cache
             if bgm_file_path in SoundPlayer.sound_cache:
                 return BgmPlayer.bgm_cache[name]
-        
+
         for bgm_file_path in bgm_file_paths:
             # Perform the file existence check
             if os.path.isfile(bgm_file_path):
                 BgmPlayer.bgm_cache[name] = bgm_file_path
                 return bgm_file_path
-                    
+
         return None
 
 
 class SoundPlayer:
-    channels = []
-    sound_cache  = {}
+    channels: list[pygame.mixer.Channel] = []
+    sound_cache = {}
 
     def __init__(self):
-        self.channel = pygame.mixer.Channel(len(self.channels))
-        SoundPlayer.channels.append(self.channel)
+        self.channel = None
 
     def play(self, name):
+        if self.channel is None:
+            self.channel = pygame.mixer.Channel(len(self.channels))
+            SoundPlayer.channels.append(self.channel)
+
         if self.channel.get_busy():
             self.channel.stop()
 
@@ -77,10 +80,23 @@ class SoundPlayer:
             print(f"Error: sound file '{name}' not found")
 
     def set_volume(self, value):
+        if self.channel is None:
+            self.channel = pygame.mixer.Channel(len(self.channels))
+            SoundPlayer.channels.append(self.channel)
         self.channel.set_volume(value)
 
     def stop(self):
+        if self.channel is None:
+            self.channel = pygame.mixer.Channel(len(self.channels))
+            SoundPlayer.channels.append(self.channel)
         self.channel.stop()
+
+    @classmethod
+    def reset(cls):
+        for c in cls.channels:
+            c.stop()
+            c.set_volume(1)
+        cls.channels = []
 
     @staticmethod
     def get_sound_path(name):
@@ -93,11 +109,11 @@ class SoundPlayer:
             # Check if the file path exists in the cache
             if sound_file_path in SoundPlayer.sound_cache:
                 return SoundPlayer.sound_cache[name]
-        
+
         for sound_file_path in sound_file_paths:
             # Perform the file existence check
             if os.path.isfile(sound_file_path):
                 SoundPlayer.sound_cache[name] = sound_file_path
                 return sound_file_path
-                    
+
         return None

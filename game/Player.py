@@ -77,12 +77,6 @@ class Player(
         self.face_right = True
         # Reinforce related
         self.reinforcing = 0
-        # Init sound player
-        self.sound_player = SoundPlayer()
-        # Init hurt player to play hurt sound
-        self.hurt_player = SoundPlayer()
-        # Init mask player to play change mask sound
-        self.mask_player = SoundPlayer()
         # Rolling related
         self.roll_cd = 2
         self.roll_cd_timer = 0
@@ -128,15 +122,11 @@ class Player(
             PlayerLevel.value = self.level
             self.delete_buff("cost")
         elif buff_name == "defence":
-            self.defence += buff_time
+            self.update_attributes(defence=buff_time)
             self.delete_buff("defence")
         elif buff_name == "hp":
-            self.max_hp += buff_time
-            self.cur_hp = self.max_hp
+            self.update_attributes(hp=buff_time)
             self.delete_buff("hp")
-
-
-        
 
     def handle_running_animation(self):
         # Only need to play run animation when running
@@ -155,8 +145,6 @@ class Player(
         if CurrentState.state == GameState.DIALOG:
             self.velocity = (0, 0)
             return
-
-        keys = pygame.key.get_pressed()
 
         dx = dy = 0
 
@@ -181,12 +169,16 @@ class Player(
         if Input.get_key_down(pygame.K_SPACE) and self.ready == 1:
             self.finished()
             self.add_buff("Reinforce", 5)
-            self.sound_player.play("ws")
+            if not hasattr(self, "ws_player"):
+                self.ws_player = SoundPlayer()
+            self.ws_player.play("ws")
 
     def handle_tools(self):
         if Input.get_key_down(pygame.K_e) and "Causality" in self.buffs.keys():
             self.bullet_causality = Causality((self.bullet_causality.value + 1) % 3)
             path = f"mask{randint(1,3)}"
+            if not hasattr(self, "mask_player"):
+                self.mask_player = SoundPlayer()
             self.mask_player.play(path)
 
     def handle_fire(self):
@@ -265,6 +257,25 @@ class Player(
                 self.rotation = self.original_rotation
                 self.is_rolling = False
 
+    def update_attributes(self, attack=0, defence=0, hp=0):
+        self.attack += attack
+        self.defence += defence
+        self.max_hp += hp
+        self.cur_hp = self.max_hp
+
+        text = f"攻: {self.attack}(+{attack}) 防: {self.defence}(+{defence}) 血: {self.max_hp} (+{hp})"
+        generator.generate(
+            Text(
+                20,
+                WindowSettings.height - 50,
+                text,
+                30,
+                duration=5,
+                contains_chinese=True,
+                center_pivot=False,
+            )
+        )
+
     def handle_damage(self, damage):
         if "Invulnerable" in self.buffs:
             return 0
@@ -281,7 +292,9 @@ class Player(
 
         EventSystem.fire_hurt_event(damage)
 
-        self.hurt_player.set_volume(0.2)
+        if not hasattr(self, "hurt_player"):
+            self.hurt_player = SoundPlayer()
+        self.hurt_player.set_volume(0.3)
         self.hurt_player.play("hurt")
 
         self.add_buff("Invulnerable", 0.5)
@@ -310,11 +323,13 @@ class Player(
     def level_up(self):
         super().level_up()
 
-        self.max_hp += 10
-        self.cur_hp = self.max_hp
-        self.attack += self.level % 2
+        self.update_attributes(attack=self.level % 2, hp=10)
 
         PlayerLevel.value = self.level
+
+        if not hasattr(self, "level_up_player"):
+            self.level_up_player = SoundPlayer()
+        self.level_up_player.play("purchase")
 
     def draw(self, window: pygame.Surface, dx=0, dy=0):
         if CurrentState.state != GameState.GAME_OVER:

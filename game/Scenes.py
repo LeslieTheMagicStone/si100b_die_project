@@ -226,6 +226,8 @@ class Scene:
 
         CollisionChecker._collidables = self._collidables
 
+        return obj
+
     # Remove object from scene object list
     def remove_object(self, obj):
         if obj not in self._objects:
@@ -294,6 +296,9 @@ class Scene:
 
     def handle_player_death_anim(self, dx, dy):
         if self.anim_time <= 10:
+            # Render player on the top
+            self.player.render_index = 1000
+
             # Fade out music
             BgmPlayer.set_volume((1 - self.anim_time / 10) * 0.9)
 
@@ -410,8 +415,8 @@ class SafeRoomScene(Scene):
 
         # Init npcs
 
-        self.dialog_npc1 = generator.generate(
-            DialogNPC(300, 300, "阿柴市民", "完蛋，你被coke老师包围了！", self.player.rect), scene=self
+        self.dialog_npc1 = self.append_object(
+            DialogNPC(300, 300, "阿柴市民", "完蛋，我们被coke老师包围了！", self.player.rect)
         )
         self.dialog_npc2 = self.append_object(
             DialogNPC(
@@ -423,7 +428,7 @@ class SafeRoomScene(Scene):
                 speed=0,
             )
         )
-        self.dialog_npc2 = self.append_object(
+        self.dialog_npc3 = self.append_object(
             DialogNPC(
                 500, 600, "阿柴守卫", "这道门背后有无尽的小coke，...，救命啊！", self.player.rect, speed=0
             )
@@ -439,7 +444,7 @@ class SafeRoomScene(Scene):
         rects_to_avoid = (
             [c.rect for c in self._collidables if c.is_rigid]
             + [p.rect for p in self._portals]
-            + [pygame.rect.Rect(400, 400, 100, 100)]
+            + [pygame.rect.Rect(400, 600, 1, 1)]
         )
         self.obstacles = Maps.gen_safe_room_obstacles(rects_to_avoid)
         for obstacle in self.obstacles:
@@ -490,7 +495,7 @@ class MobRoomScene(Scene):
         self.tile_map = generator.generate(tile_map, scene=self)
 
         # Init portal
-        self.append_object(Portal(400, 500, "last"))
+        self.append_object(Portal(500, 500, "last"))
 
         # Init monsters
         monster_count = mob_count + randint(-1, 1)
@@ -531,7 +536,7 @@ class MobRoomScene(Scene):
                 break
         else:
             if len(self._portals) == 1:
-                generator.generate(Portal(150, 150, "next"), scene=self)
+                generator.generate(Portal(200, 200, "next"), scene=self)
 
     def render(self):
         # Render background with black
@@ -572,7 +577,7 @@ class InfiniteMobRoomScene(Scene):
             [(left, top), (right, bottom)] = self.tile_map.get_corners()
             x = randint(left + 50, right - 50)
             y = randint(top + 50, bottom - 50)
-            level = self.player.level + randint(-3, 3)
+            level = int(self.player.level * 1.5) + randint(-1, 3)
             level = max(level, 1)
             causality = Causality(randint(1, 2))
             monster = Monster(self.player.rect, x, y, causality=causality, level=level)
@@ -608,6 +613,9 @@ class ToolRoomScence(Scene):
         face_mark = Tools(300, 300)
         generator.generate(face_mark, scene=self)
 
+        # Init portals
+        self.append_object(Portal(500, 500, "last"))
+
         self.walls = Maps.gen_walls(self.tile_map.get_corners())
         for wall in self.walls:
             generator.generate(wall, scene=self)
@@ -619,7 +627,7 @@ class ToolRoomScence(Scene):
         super().update()
 
         if "Causality" in self.player.buffs.keys():
-            if len(self._portals) == 0:
+            if len(self._portals) == 1:
                 generator.generate(Portal(150, 150, "next"), scene=self)
 
     def render(self):
@@ -656,6 +664,8 @@ class BossRoomScene(Scene):
         BgmPlayer.play("boss")
         pygame.mixer.music.set_volume(0.9)
 
+        self.sp = SoundPlayer()
+
         # For transition animation
         self.anim_time = 0
 
@@ -663,8 +673,7 @@ class BossRoomScene(Scene):
         if CurrentState.in_transition_animation:
             if self.anim_time == 0:
                 pygame.mixer.music.set_volume(0.3)
-                sp = SoundPlayer()
-                sp.play("transition")
+                self.sp.play("transition")
             elif self.anim_time >= 14:
                 pygame.mixer.music.set_volume(1)
                 CurrentState.in_transition_animation = False

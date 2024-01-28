@@ -337,9 +337,10 @@ class Text(Renderable):
         size,
         color=(255, 255, 255),
         duration=-1,
-        render_index=RenderIndex.ui,
+        render_index=RenderIndex.ui + 10,
         is_active=True,
         contains_chinese=False,
+        center_pivot=True,
     ):
         super().__init__(render_index, is_active)
 
@@ -350,7 +351,10 @@ class Text(Renderable):
 
         self.image = self.font.render(text, True, color)
         self.rect = self.image.get_rect()
-        self.rect.center = (x, y)
+        if center_pivot:
+            self.rect.center = (x, y)
+        else:
+            self.rect.topleft = (x, y)
         self.duration = duration
         self.life_time = duration
 
@@ -550,17 +554,17 @@ class ShopBox(Renderable):
             image = pygame.transform.scale(
                 self.portrait, (DialogSettings.npcWidth, DialogSettings.npcHeight)
             )
-            window.blit(image, (DialogSettings.npcCoordX, DialogSettings.npcCoordY))
+            window.blit(image, (DialogSettings.npcCoordX, ShopSettings.boxStartY))
 
         offset = 0
         for index, item_name in enumerate(list(self.items.keys())):
             if index == self.cur_item_index:
                 text_surface = self.font.render(
-                    f"> {item_name}:{self.items[item_name]} <", True, self.fontColor
+                    f"> {item_name}: 消耗{self.items[item_name]}级 <", True, self.fontColor
                 )
             else:
                 text_surface = self.font.render(
-                    f"{item_name}:{self.items[item_name]}", True, self.fontColor
+                    f"{item_name}: 消耗{self.items[item_name]}级", True, self.fontColor
                 )
 
             # If item unaffordable then make it more transparent

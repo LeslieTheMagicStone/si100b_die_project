@@ -256,7 +256,7 @@ class EnemyLaserGenerator(EnemyBullet):
         self.rect = self.image.get_rect()
         self.rect.center = (x, y)
         # Generate Enemy Laser
-        self.generate_cd = 0.4
+        self.generate_cd = 0.8
         self.generate_timer = 0
         
 
@@ -274,7 +274,7 @@ class EnemyLaserGenerator(EnemyBullet):
                         self.rect.centerx,
                         self.rect.centery,
                         Math.scale(direction, ProjectileSettings.bulletSpeed // 2),
-                        5,
+                        15,
                         self.causality,
                     )
                 )

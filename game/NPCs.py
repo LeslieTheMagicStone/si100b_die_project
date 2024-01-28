@@ -360,9 +360,10 @@ class Boss(Monster):
             )
             velocity = Math.scale(direction, ProjectileSettings.bulletSpeed)
 
-            generator.generate(EnemyBullet(x, y, velocity, 5, Causality.ICE))
+            if self.remaining_lives > 0:
+                generator.generate(EnemyBullet(x, y, velocity, 5, Causality.ICE))
 
-            if randint(0, 5) == 0:
+            if randint(0, 15) == 0:
                 generator.generate(
                     EnemyBigBullet(x, y, Math.scale(velocity, 0.5), 5, Causality.ICE)
                 )
@@ -372,7 +373,7 @@ class Boss(Monster):
 
             # Phase 2 gets upgrades
             noise = (randint(-2, 2), randint(-2, 2))
-            if randint(0, 4) == 0:
+            if randint(0, 9) == 0:
                 generator.generate(
                     EnemyBigBullet(
                         x,
@@ -386,12 +387,12 @@ class Boss(Monster):
             if self.remaining_lives == 1:
                 return
 
-            # Phase 1 gets more upgrades
+            # Phase 3 gets more upgrades
             self.states["ATTACK"] = 3
             self.states["STOP"] = 0.5
-            if randint(0, 10) == 0:
+            if randint(0, 20) == 0:
                 generator.generate(
-                    EnemyLaserGenerator(x, y, 10, 5, Causality(randint(0, 2)))
+                    EnemyLaserGenerator(x, y, 10, 4, Causality(randint(0, 2)))
                 )
         elif self.cur_state == "SUMMON":
             self.velocity = (random() * randint(-5, 5), random() * randint(-5, 5))

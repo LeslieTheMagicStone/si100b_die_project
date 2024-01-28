@@ -27,6 +27,8 @@ class GameManager:
     def game_reset(self):
         # Reset BGM Player
         BgmPlayer.set_volume(1)
+        # Reset Sound Player
+        SoundPlayer.reset()
         # Initialize player
         self.player = Player(0, 0)
         self.player.reset_pos()
