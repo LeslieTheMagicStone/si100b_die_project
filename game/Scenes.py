@@ -567,6 +567,9 @@ class InfiniteMobRoomScene(Scene):
 
         BgmPlayer.play("wild")
 
+        self.gen_monsters()
+
+    def gen_monsters(self):
         mob_count = randint(6, 8)
 
         # Init monsters
@@ -594,6 +597,14 @@ class InfiniteMobRoomScene(Scene):
 
     def update(self):
         super().update()
+
+        for c in self._collidables:
+            if isinstance(c, Monster):
+                break
+        else:
+            self.gen_monsters()
+
+
 
     def render(self):
         # Render background with black

@@ -105,6 +105,7 @@ class DialogNPC(NPC):
 
     def handle_movement(self):
         if CurrentState.state == GameState.DIALOG:
+            self.velocity = (0, 0)
             return
 
         if self.behavior_timer < 0:
